@@ -3,7 +3,6 @@ import json
 import os
 from urllib import request
 from zipfile import ZipFile
-
 from flask import Flask, make_response
 
 app = Flask(__name__)
@@ -34,7 +33,7 @@ def gen_dir_json(dirname, contents_file):
                 'size': os.path.getsize(os.path.join(dirname, file))
             })
     with open(contents_file, 'w') as out:
-        json.dump(files, out, indent=2)
+        json.dump(files, out)
 
 
 def unzip_from_link(url, uid_dir):
