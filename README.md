@@ -10,6 +10,8 @@ $ flask run
 #### Request
 `http://127.0.0.1:5000/uid/[uid]`
 #### Response Example
+##### Success
+`response code: 200`
 ```json
 [
   {
@@ -21,4 +23,9 @@ $ flask run
     "size": 308258
   }
 ]
+``` 
+##### Error
+`response code: 400`
+```json
+{"error": "[error message]"}
 ``` 
