@@ -20,7 +20,7 @@ def get_content(uid):
             resp = make_response(filein.read(), 200)
             resp.headers['Content-Type'] = 'application/json'
     except Exception as e:
-        resp = make_response('{error: "%s"}' % str(e), 400)
+        resp = make_response('{"error": "%s"}' % str(e), 400)
         resp.headers['Content-Type'] = 'application/json'
     return resp
 
