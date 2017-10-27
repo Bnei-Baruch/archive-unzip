@@ -1,20 +1,20 @@
+#!/usr/bin/python3
+
 import io
 import json
 import os
 from urllib import request
 from zipfile import ZipFile
-from flask import Flask, make_response
+from flask.helpers import make_response
 
-app = Flask(__name__)
-linker_base_url = 'https://cdn.kabbalahmedia.info/'
-contents_json = 'contents.json'
-output_dir = 'target/assets/sketches'
+index_json = 'index.json'
+app_dir = 'unzip'
 
 
-@app.route('/uid/<uid>')
-def get_content(uid):
+def unzip_uid(uid, linker_base_url, base_dir):
+    output_dir = os.path.join(base_dir, app_dir) if base_dir else app_dir
     try:
-        json_file = process_dir(uid)
+        json_file = process_dir(uid, linker_base_url, output_dir)
         with open(json_file) as filein:
             resp = make_response(filein.read(), 200)
             resp.headers['Content-Type'] = 'application/json'
@@ -44,10 +44,10 @@ def unzip_from_link(url, uid_dir):
             zipfile.extract(info, path=uid_dir)
 
 
-def process_dir(uid):
+def process_dir(uid, linker_base_url, output_dir):
     uid_dir = os.path.join(output_dir, uid)
-    contents_file = os.path.join(uid_dir, contents_json)
-    if not os.path.exists(contents_file):
+    index_file = os.path.join(uid_dir, index_json)
+    if not os.path.exists(index_file):
         unzip_from_link(linker_base_url + uid, uid_dir)
-        gen_dir_json(uid_dir, contents_file)
-    return contents_file
+        gen_dir_json(uid_dir, index_file)
+    return index_file
