@@ -1,7 +1,7 @@
 ## Server Setup
 ```bash
 $ pip install Flask
-$ export FLASK_APP=uid-unzip.py
+$ export FLASK_APP=api.py
 $ flask run
  * Running on http://localhost:5000/
 ```
