@@ -6,17 +6,22 @@ from doc2html_uid import doc2html_uid
 from unzip_uid import unzip_uid
 
 app = Flask(__name__)
-linker_base_url = 'https://cdn.kabbalahmedia.info/'
 
-base_dir = os.environ.get('API_STATIC_BASE_DIR')
-print("INFO: api base_dir: [%s]", base_dir)
+linker_base_url = os.environ.get('API_LINKER_URL', 'https://cdn.kabbalahmedia.info/')
+print("INFO: api linker_base_url: ", linker_base_url)
+base_dir = os.environ.get('API_STATIC_BASE_DIR', 'assets')
+print("INFO: api base_dir: ", base_dir)
 
 
 @app.route('/unzip/<uid>')
 def unzip(uid):
-    unzip_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
+    return unzip_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
 
 
 @app.route('/doc2html/<uid>')
 def doc2html(uid):
-    doc2html_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
+    return doc2html_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
+
+
+if __name__ == '__main__':
+    app.run()
