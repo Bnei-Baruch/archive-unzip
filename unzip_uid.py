@@ -5,6 +5,7 @@ import json
 import os
 from urllib import request
 from zipfile import ZipFile
+
 from flask.helpers import make_response
 
 index_json = 'index.json'
@@ -24,16 +25,13 @@ def unzip_uid(uid, linker_base_url, base_dir):
     return resp
 
 
-def gen_dir_json(dirname, contents_file):
-    files = []
-    for file in os.listdir(dirname):
-        if not file.startswith("."):
-            files.append({
-                'path': os.path.join(dirname, file),
-                'size': os.path.getsize(os.path.join(dirname, file))
-            })
-    with open(contents_file, 'w') as out:
-        json.dump(files, out)
+def process_dir(uid, linker_base_url, output_dir):
+    uid_dir = os.path.join(output_dir, uid)
+    index_file = os.path.join(uid_dir, index_json)
+    if not os.path.exists(index_file):
+        unzip_from_link(linker_base_url + uid, uid_dir)
+        gen_dir_json(uid_dir, index_file)
+    return index_file
 
 
 def unzip_from_link(url, uid_dir):
@@ -44,10 +42,13 @@ def unzip_from_link(url, uid_dir):
             zipfile.extract(info, path=uid_dir)
 
 
-def process_dir(uid, linker_base_url, output_dir):
-    uid_dir = os.path.join(output_dir, uid)
-    index_file = os.path.join(uid_dir, index_json)
-    if not os.path.exists(index_file):
-        unzip_from_link(linker_base_url + uid, uid_dir)
-        gen_dir_json(uid_dir, index_file)
-    return index_file
+def gen_dir_json(dirname, contents_file):
+    files = []
+    for file in os.listdir(dirname):
+        if not file.startswith("."):
+            files.append({
+                'path': os.path.join(dirname, file),
+                'size': os.path.getsize(os.path.join(dirname, file))
+            })
+    with open(contents_file, 'w') as out:
+        json.dump(files, out)

@@ -1,7 +1,9 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 
 import os
+
 from flask import Flask
+
 from doc2html_uid import doc2html_uid
 from unzip_uid import unzip_uid
 
@@ -9,6 +11,7 @@ app = Flask(__name__)
 
 linker_base_url = os.environ.get('API_LINKER_URL', 'https://cdn.kabbalahmedia.info/')
 print("INFO: api linker_base_url: ", linker_base_url)
+
 base_dir = os.environ.get('API_STATIC_BASE_DIR', 'assets')
 print("INFO: api base_dir: ", base_dir)
 
