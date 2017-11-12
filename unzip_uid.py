@@ -47,7 +47,7 @@ def gen_dir_json(dirname, contents_file):
     for file in os.listdir(dirname):
         if not file.startswith("."):
             files.append({
-                'path': os.path.join(dirname, file),
+                'path': file,
                 'size': os.path.getsize(os.path.join(dirname, file))
             })
     with open(contents_file, 'w') as out:
