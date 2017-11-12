@@ -1,8 +1,13 @@
+assets/
+
 .idea/
 **/*.iml
-assets/
+
 bin/
+include/
 lib/
 lib64
 pyvenv.cfg
 pip-selfcheck.json
+
+logs/
