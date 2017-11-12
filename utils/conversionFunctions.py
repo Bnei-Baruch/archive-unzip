@@ -11,7 +11,7 @@ import pypandoc
 import tidylib
 
 # Warning: symlinks don't work, see https://superuser.com/a/1089693
-soffice_bin = '/Applications/LibreOffice.app/Contents/MacOS/soffice'
+soffice_bin = os.environ.get('API_SOFFICE_BIN', '/Applications/LibreOffice.app/Contents/MacOS/soffice')
 
 tidy_options_file = 'utils/tidyOptions.json'
 
