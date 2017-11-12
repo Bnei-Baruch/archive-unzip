@@ -13,7 +13,18 @@ import tidylib
 # Warning: symlinks don't work, see https://superuser.com/a/1089693
 soffice_bin = os.environ.get('API_SOFFICE_BIN', '/Applications/LibreOffice.app/Contents/MacOS/soffice')
 
-tidy_options_file = 'utils/tidyOptions.json'
+tidy_options = {
+    "clean": "yes",
+    "drop-proprietary-attributes": "yes",
+    "drop-empty-paras": "yes",
+    "output-html": "yes",
+    "input-encoding": "utf8",
+    "output-encoding": "utf8",
+    "join-classes": "yes",
+    "join-styles": "yes",
+    "show-body-only": "yes",
+    "force-output": "yes"
+}
 
 
 def convert_from_doc_to_docx(working_dir, filename):
@@ -43,23 +54,17 @@ def convert_from_docx_to_html(uid):
     pypandoc.convert_file(sourcepath, to='html5', extra_args=['-s'], outputfile=destpath)
     print("Done converting from docx to html (pandoc) sourcepath:%s, destpath: %s" % (sourcepath, destpath))
 
-    tidy_options = None
-    if False:
-        with open(tidy_options_file) as filein:
-            tidy_options = json.load(filein)
+    print("Start to tidy html. Input file '{}'".format(destpath))
+    with open(destpath, 'r') as outfile:
+        html_file_content = outfile.read().replace('\n', '')
 
-    if tidy_options:
-        print("Start to tidy html. Input file '{}'".format(destpath))
-        with open(destpath, 'r') as outfile:
-            html_file_content = outfile.read().replace('\n', '')
+    markup, errors = tidylib.tidy_document(html_file_content, tidy_options)
+    if len(errors) > 0:
+        print(errors)
 
-        markup, errors = tidylib.tidy_document(html_file_content, tidy_options)
-        if len(errors) > 0:
-            print(errors)
+    with open(destpath, 'w') as outfile:
+        outfile.write(markup)
 
-        with open(destpath, 'w') as outfile:
-            outfile.write(markup)
-
-        print("Done tidy html file [%s]" % destpath)
+    print("Done tidy html file [%s]" % destpath)
 
     return destpath
