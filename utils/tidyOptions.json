@@ -7,6 +7,6 @@
   "output-encoding": "utf8",
   "join-classes": "yes",
   "join-styles": "yes",
-  "show-body-only": "no",
+  "show-body-only": "yes",
   "force-output": "yes"
 }
