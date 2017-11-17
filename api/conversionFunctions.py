@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # https://github.com/Bnei-Baruch/source-conversion/blob/master/sourcesToHtmlConversion/conversionFunctions.py
 
-import json
 import os
 import subprocess
 

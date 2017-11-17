@@ -4,7 +4,7 @@ from urllib import request
 
 from flask.helpers import make_response
 
-from utils.conversionFunctions import convert_from_doc_to_docx, convert_from_docx_to_html
+from api.conversionFunctions import convert_from_doc_to_docx, convert_from_docx_to_html
 
 app_dir = 'doc2html'
 test_uid = 'kROl7RLZ'
