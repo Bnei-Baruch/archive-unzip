@@ -29,7 +29,10 @@ def doc2html(uid):
 
 @app.route('/thumbnail/<uid>')
 def thumbnail(uid):
-    return thumbnail_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
+    try:
+        return thumbnail_uid(uid, linker_base_url=linker_base_url, base_dir=base_dir)
+    except:
+        return "there is no such a unit id \"{}\"".format(uid)
 
 
 if __name__ == '__main__':
