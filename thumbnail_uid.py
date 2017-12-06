@@ -8,10 +8,10 @@ from flask import send_file
 
 # db settings
 app_dir = 'thumbnail'
-db_name = 'mdb'
-db_user = 'readonly'
-db_pass = 'g!7vJx-QHz'
-db_host = 'pgsql.mdb.bbdomain.org'
+db_name = os.environ.get('DB_NAME')
+db_user = os.environ.get('DB_USER')
+db_pass = os.environ.get('DB_PASS')
+db_host = os.environ.get('DB_HOST')
 
 
 def thumbnail_uid(uid, linker_base_url, base_dir):
