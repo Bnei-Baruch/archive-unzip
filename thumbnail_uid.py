@@ -8,10 +8,10 @@ from flask import send_file
 
 # db settings
 app_dir = 'thumbnail'
-db_name = 'mdb'
-db_user = 'readonly'
-db_pass = 'g!7vJx-QHz'
-db_host = 'pgsql.mdb.bbdomain.org'
+db_name = os.environ.get('DB_NAME')
+db_user = os.environ.get('DB_USER')
+db_pass = os.environ.get('DB_PASS')
+db_host = os.environ.get('DB_HOST')
 
 
 def thumbnail_uid(uid, linker_base_url, base_dir):
@@ -44,7 +44,7 @@ def thumbnail_uid(uid, linker_base_url, base_dir):
 def get_file_uid(unit_id):
     """ return the file uid from unit uid """
     try:
-        conn = connect("dbname='{}' user='{}' host='{}' password='{}'".format(db_name, db_user, db_host, db_pass))
+        conn = connect(dbname=db_name, user=db_user, host=db_host, password=db_pass)
         cur = conn.cursor()
         cur.execute("""select f.uid from files f inner join content_units cu on f.content_unit_id = cu.id 
                 and cu.uid='{}' and f.secure=0 and f.published is true and f.name ~ '\.mp4$';""".format(unit_id))
