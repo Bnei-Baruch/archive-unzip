@@ -4,7 +4,7 @@ import os
 from urllib import request
 from zipfile import ZipFile
 
-from flask import Blueprint, current_app, send_from_directory
+from flask import Blueprint, current_app, send_from_directory, send_file
 from flask.helpers import make_response
 
 MODULE_DIR = 'unzip'
@@ -17,6 +17,8 @@ blueprint = Blueprint('unzip', __name__, url_prefix='/unzip')
 def unzip(uid):
     file_path = process_uid(uid)
     if file_path:
+        if os.path.isabs(file_path):
+            return send_file(file_path)
         base_dir = current_app.config['BASE_DIR']
         directory = os.path.dirname(os.path.abspath(base_dir))
         return send_from_directory(directory, file_path)

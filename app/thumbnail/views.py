@@ -2,7 +2,7 @@ import os
 from subprocess import call
 
 from flask import Blueprint, current_app
-from flask.helpers import make_response, send_from_directory
+from flask.helpers import make_response, send_from_directory, send_file
 
 MODULE_DIR = 'thumbnail'
 THUMB_FILE = 'thumb_orig.png'
@@ -23,6 +23,8 @@ blueprint = Blueprint('thumbnail', __name__, url_prefix='/thumbnail')
 def thumbnail(uid):
     file_path = process_uid(uid)
     if file_path:
+        if os.path.isabs(file_path):
+            return send_file(file_path)
         base_dir = current_app.config['BASE_DIR']
         directory = os.path.dirname(os.path.abspath(base_dir))
         return send_from_directory(directory, file_path)
