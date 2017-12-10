@@ -6,6 +6,7 @@ class Config(object):
 
     BASE_DIR = os.environ.get('BASE_DIR', 'assets')
     LINKER_URL = os.environ.get('LINKER_URL', 'https://cdn.kabbalahmedia.info/')
+    PUBLIC_PATH = os.environ.get('PUBLIC_PATH', '/assets')
 
     MDB_URL = os.environ.get('MDB_URL', 'postgres://localhost/mdb?sslmode=disable')
     MDB_POOL_SIZE = int(os.environ.get('MDB_POOL_SIZE', '2'))

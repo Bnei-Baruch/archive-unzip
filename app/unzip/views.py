@@ -49,7 +49,7 @@ def process_uid(uid):
         if not file.startswith("."):
             path = os.path.join(uid_dir, file)
             files.append({
-                'path': path,
+                'path': current_app.sendfile.public_path(path),
                 'size': os.path.getsize(path)
             })
 
