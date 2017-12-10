@@ -1,4 +1,6 @@
+import datetime
 import os
+import random
 from subprocess import call
 
 from flask import Blueprint, current_app
@@ -8,7 +10,7 @@ MODULE_DIR = 'thumbnail'
 THUMB_FILE = 'thumb_orig.png'
 
 REPRESENTATIVE_FILE_SQL = """
-select f.uid from files f 
+select f.uid, (f.properties->>'duration')::int as duration from files f 
 inner join content_units cu on f.content_unit_id = cu.id
  and cu.uid = %s
  and f.secure=0 
@@ -41,16 +43,22 @@ def process_uid(uid):
         return thumb_file
 
     # find representative video file
-    file_uid = get_file_uid(uid)
+    file_uid, duration = get_representative_file(uid)
     if file_uid is None:
         return None
 
     # make thumbnail from file
     os.makedirs(uid_dir, exist_ok=True)
     url = current_app.config['LINKER_URL'] + file_uid + ".mp4"
+
+    ss = "00:00:05"
+    if duration > 5:
+        pos = random.randint(5, min(duration, 5 * 60))
+        ss = str(datetime.timedelta(seconds=pos))
+
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
     call([ffmpeg_bin, '-y',
-          "-ss", "00:00:15",
+          "-ss", ss,
           "-i", url,
           "-vf", "thumbnail",
           "-vframes", "1",
@@ -61,9 +69,9 @@ def process_uid(uid):
     return thumb_file
 
 
-def get_file_uid(unit_id):
+def get_representative_file(unit_id):
     """ return the file uid from unit uid """
     with current_app.mdb.get_cursor() as cur:
         cur.execute(REPRESENTATIVE_FILE_SQL, (unit_id,))
         d = cur.fetchone()
-        return d['uid'] if d else None
+        return d['uid'], d['duration'] if d else None
