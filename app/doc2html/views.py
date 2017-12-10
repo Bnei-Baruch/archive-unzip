@@ -26,7 +26,7 @@ def process_uid(uid):
     os.makedirs(output_dir, exist_ok=True)
 
     uid_dir = os.path.join(output_dir, uid)
-    html_file = os.path.join(uid, uid + '.html')
+    html_file = os.path.join(uid_dir, uid + '.html')
 
     # file already exist ?
     if os.path.exists(html_file):
@@ -35,18 +35,36 @@ def process_uid(uid):
     # make sure uid_dir exist
     os.makedirs(uid_dir, exist_ok=True)
 
-    # Download file
-    # TODO: handle http errors and map them to relevant errors to our users
-    # TODO get real filename extension?
-    path = os.path.join(uid_dir, uid + '.doc')
-    url = current_app.config['LINKER_URL'] + uid
-    request.urlretrieve(url, path)
+    # get real file type from mdb
+    file_type = get_file_type(uid)
+    if not file_type:
+        return None
+
+    # Download file if necessary
+    path = os.path.join(uid_dir, '{}.{}'.format(uid, file_type))
+    if not os.path.exists(path):
+        url = current_app.config['LINKER_URL'] + uid
+        # TODO: handle http errors and map them to relevant errors to our users
+        request.urlretrieve(url, path)
 
     # Convert doc to docx if necessary
-    # TODO skip conversion if already docx
-    soffice_bin = current_app.config['SOFFICE_BIN']
-    docx_file = doc_to_docx(path, soffice_bin, current_app.logger)
-    html_file = docx_file[:-4] + "html"
+    if file_type == 'doc':
+        soffice_bin = current_app.config['SOFFICE_BIN']
+        path = doc_to_docx(path, soffice_bin, current_app.logger)
 
     # Convert docx to html
-    return docx_to_html(docx_file, html_file, current_app.logger)
+    html_file = path[:-4] + "html"
+    return docx_to_html(path, html_file, current_app.logger)
+
+
+def get_file_type(uid):
+    with current_app.mdb.get_cursor() as cur:
+        cur.execute("select name, type, sub_type, mime_type from files where uid = %s", (uid,))
+        d = cur.fetchone()
+        if not d:
+            return None
+
+        if d['type'] != 'text':
+            return None
+
+        return d['name'].split('.')[-1]
