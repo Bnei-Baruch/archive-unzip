@@ -8,6 +8,6 @@ RUN apk-install python3 \
 	python3-dev \
 	py3-pip &&\
 	pip3 install -r requirements.txt
-ENV FLASK_APP=api.py
+ENV FLASK_APP=autoapp.py
 EXPOSE 5000
 CMD ["flask", "run"]
