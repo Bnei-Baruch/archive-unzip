@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify
 
 from app import unzip, doc2html, thumbnail
-from . import mdb
+from . import mdb, sendfile
 
 CONFIG_NAME_MAPPER = {
     'dev': 'config.DevConfig',
@@ -24,6 +24,7 @@ def create_app(env_name='dev', **kwargs):
 
     # init extensions
     mdb.MDB(app, app.config['MDB_POOL_SIZE'])
+    sendfile.Sendfile(app)
 
     # register blueprints
     app.register_blueprint(unzip.views.blueprint)

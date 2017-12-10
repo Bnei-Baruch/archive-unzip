@@ -1,7 +1,7 @@
 import os
 from urllib import request
 
-from flask import Blueprint, current_app, send_from_directory, send_file
+from flask import Blueprint, current_app
 from flask.helpers import make_response
 
 from .conversionFunctions import doc_to_docx, docx_to_html
@@ -15,11 +15,7 @@ blueprint = Blueprint('doc2html', __name__, url_prefix='/doc2html')
 def doc2html(uid):
     file_path = process_uid(uid)
     if file_path:
-        if os.path.isabs(file_path):
-            return send_file(file_path)
-        base_dir = current_app.config['BASE_DIR']
-        directory = os.path.dirname(os.path.abspath(base_dir))
-        return send_from_directory(directory, file_path)
+        return current_app.sendfile.send_file(file_path)
     else:
         return make_response("missing info", 404)
 
