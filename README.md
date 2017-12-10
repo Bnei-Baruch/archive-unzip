@@ -6,6 +6,13 @@ $ flask run
  * Running on http://localhost:5000/
 ```
 
+## Dependencies
+
+ffmpeg is installed from sources according to
+https://trac.ffmpeg.org/wiki/CompilationGuide/Centos
+
+See ./misc/instal_ffmpeg.sh
+
 ## API
 #### Request
 `http://127.0.0.1:5000/uid/[uid]`
