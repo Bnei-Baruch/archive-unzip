@@ -1,0 +1,21 @@
+[uwsgi]
+chdir = /sites/archive-unzip/
+wsgi-file = wsgi.py
+callable = app
+
+socket = uwsgi.sock
+chmod-socket = 666
+vacuum = true
+
+master = true
+processes = 3
+threads = 2
+
+env = LINKER_URL=
+env = BASE_DIR=
+env = SOFFICE_BIN=
+env = FFMPEG_BIN=
+env = MDB_URL=
+env = MDB_POOL_SIZE=
+
+die-on-term = true
