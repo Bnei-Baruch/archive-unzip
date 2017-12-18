@@ -36,3 +36,9 @@ See ./misc/instal_ffmpeg.sh
 ```json
 {"error": "[error message]"}
 ``` 
+
+
+
+## License
+
+MIT
