@@ -27,10 +27,15 @@ def doc_to_docx(doc_file, soffice_bin, logger):
     working_dir = os.path.dirname(doc_file)
     cmd = '%s --headless --convert-to docx --outdir %s %s' % (soffice_bin, working_dir, doc_file)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    stdout, stderr = p.communicate()
-    logger.debug(stdout.decode(encoding='UTF-8'))
-    if len(stderr) > 0:
-        raise IOError(stderr)
+    try:
+        stdout, stderr = p.communicate(timeout=15)
+    except TimeoutError:
+        p.kill()
+        raise
+    else:
+        logger.debug(stdout.decode(encoding='UTF-8'))
+        if len(stderr) > 0:
+            raise IOError(stderr)
 
     logger.debug("Done converting from doc to docx")
 
