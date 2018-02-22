@@ -7,7 +7,7 @@ from flask import Blueprint, current_app
 from flask.helpers import make_response
 
 MODULE_DIR = 'thumbnail'
-THUMB_FILE = 'thumb_orig.png'
+THUMB_FILE = 'thumb_orig.jpg'
 
 REPRESENTATIVE_FILE_SQL = """
 select f.uid, (f.properties->>'duration')::int as duration from files f 
@@ -63,7 +63,6 @@ def process_uid(uid):
           "-vf", "thumbnail",
           "-vframes", "1",
           "-format", "image2",
-          "-vcodec", "png",
           thumb_file])
 
     return thumb_file
