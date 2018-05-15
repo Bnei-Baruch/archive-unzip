@@ -10,7 +10,7 @@ MODULE_DIR = 'thumbnail'
 THUMB_FILE = 'thumb_orig.jpg'
 
 REPRESENTATIVE_FILE_SQL = """
-select f.uid, (f.properties->>'duration')::int as duration from files f 
+select f.uid, (round((f.properties->>'duration')::real))::int as duration from files f 
 inner join content_units cu on f.content_unit_id = cu.id
  and cu.uid = %s
  and f.secure=0 
