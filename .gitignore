@@ -2,6 +2,7 @@ assets/
 
 .idea/
 **/*.iml
+**/*.pyc
 
 bin/
 include/
