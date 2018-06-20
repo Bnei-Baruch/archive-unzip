@@ -10,12 +10,24 @@ MODULE_DIR = 'thumbnail'
 THUMB_FILE = 'thumb_orig.jpg'
 
 REPRESENTATIVE_FILE_SQL = """
-select f.uid, (round((f.properties->>'duration')::real))::int as duration from files f 
-inner join content_units cu on f.content_unit_id = cu.id
- and cu.uid = %s
- and f.secure=0 
- and f.published is true 
- and f.name ~ '\.mp4$'
+select
+  f.uid,
+  (round((f.properties ->> 'duration') :: real)) :: int as duration
+from files f
+  inner join content_units cu on f.content_unit_id = cu.id
+                                 and cu.uid = %s
+                                 and f.secure = 0
+                                 and f.published is true
+                                 and f.name ~ '\.mp4$'
+order by
+  case
+  when (f.properties ->> 'video_size' = 'FHD')
+    then 1
+  when (f.properties ->> 'video_size' = 'HD')
+    then 2
+  else 3
+  end,
+coalesce(array_position('{he, ru, en, es}', f.language), 99)
  """
 
 blueprint = Blueprint('thumbnail', __name__, url_prefix='/thumbnail')
@@ -73,4 +85,6 @@ def get_representative_file(unit_id):
     with current_app.mdb.get_cursor() as cur:
         cur.execute(REPRESENTATIVE_FILE_SQL, (unit_id,))
         d = cur.fetchone()
-        return d['uid'], d['duration'] if d else None
+        if d:
+            return d['uid'], d['duration']
+        return None, 0
