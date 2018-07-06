@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+import shutil
 from subprocess import call
 
 from flask import Blueprint, current_app
@@ -29,6 +30,35 @@ def thumbnail(uid):
     else:
         return make_response("missing info", 404)
 
+@blueprint.route('/save', methods=('POST'))
+def thumbnail_save():
+    uid = request.form['uid']
+    candidate = request.form['candidate']
+
+    candidate_file = op.path.join(get_candidates_folder(uid), candidate)
+    if not os.path.exists(candidate_file)
+        return make_response("missing candidate file for uid", 404);
+
+    thumbnail_file = get_current_thumbnail_file(uid)
+    shutil.copyfile(candidate_file, thumbnail_file)
+
+    return make_response("thumbnail saved", 200);
+
+# Get the parent folder path for the uid
+def get_uid_folder(uid):
+    base_dir = current_app.config['BASE_DIR']
+    output_dir = os.path.join(base_dir, MODULE_DIR)
+    uid_dir = os.path.join(output_dir, uid)
+
+    return uid_dir
+
+# Get the path to the current thumbnail
+def get_current_thumbnail_file(uid):
+    return os.path.join(get_uid_folder(uid), THUMB_FILE)
+
+# Get the candidates folder path
+def get_candidates_folder(uid):
+    return os.path.join(get_uid_folder(uid), '.candidates/')
 
 def process_uid(uid):
     base_dir = current_app.config['BASE_DIR']
