@@ -55,36 +55,38 @@ def process_uid(uid):
         return thumb_file
 
     # find representative video file
-    file_uid, duration = get_representative_file(uid)
-    if file_uid is None:
+    candidates = get_representative_file(uid)
+    if not candidates:
         return None
 
     # make thumbnail from file
     os.makedirs(uid_dir, exist_ok=True)
-    url = current_app.config['LINKER_URL'] + file_uid + ".mp4"
-
-    ss = "00:00:05"
-    if duration > 5:
-        pos = random.randint(5, min(duration, 5 * 60))
-        ss = str(datetime.timedelta(seconds=pos))
 
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
-    call([ffmpeg_bin, '-y',
-          "-ss", ss,
-          "-i", url,
-          "-vf", "thumbnail",
-          "-vframes", "1",
-          "-format", "image2",
-          thumb_file])
+    for file_uid, duration in candidates:
+        url = current_app.config['LINKER_URL'] + file_uid + ".mp4"
 
-    return thumb_file
+        ss = "00:00:05"
+        if duration > 5:
+            pos = random.randint(5, min(duration, 5 * 60))
+            ss = str(datetime.timedelta(seconds=pos))
+
+        ret_code = call([ffmpeg_bin, '-y',
+                        "-ss", ss,
+                        "-i", url,
+                        "-vf", "thumbnail",
+                        "-vframes", "1",
+                        "-format", "image2",
+                        thumb_file])
+        if ret_code == 0:
+            return thumb_file
+
+    return None
 
 
 def get_representative_file(unit_id):
     """ return the file uid from unit uid """
     with current_app.mdb.get_cursor() as cur:
         cur.execute(REPRESENTATIVE_FILE_SQL, (unit_id,))
-        d = cur.fetchone()
-        if d:
-            return d['uid'], d['duration']
-        return None, 0
+        data = cur.fetchall()
+        return [(row['uid'], row['duration']) for row in data]
