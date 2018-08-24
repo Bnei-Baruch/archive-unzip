@@ -2,6 +2,7 @@ import datetime
 import os
 import random
 import glob
+import json
 from subprocess import call
 
 from flask import Blueprint, current_app
@@ -82,7 +83,7 @@ def thumbnail_candidates(uid):
         print ('No candidates found')
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 	
-    return CreateJasonMessage(candidate_files)
+    return json.dumps(candidate_files)
 
 
 def create_candidate_thumbnails(candidates_dir, file_uid, duration):
@@ -94,7 +95,8 @@ def create_candidate_thumbnails(candidates_dir, file_uid, duration):
         candidates_files.append(thumb_file)
     return candidates_files
 
-#  c_<offset>.jpg
+
+#  file format: c_<offset>.jpg
 def createThumbFile(candidates_dir, file_uid, duration):
     print ('start createThumbFile. file_uid=', file_uid, 'duration=', duration)
 	
@@ -120,16 +122,6 @@ def createThumbFile(candidates_dir, file_uid, duration):
 
     return thumb_file
 
-def CreateJasonMessage(filesInUnitDir):
-    print('Start CreateJasonMessage.')
-	
-    str = ''
-    for file in filesInUnitDir:
-    	#print('file=', file)
-    	str = str + file + '____'
-    
-    print ("\n jason=", str)
-    return str
 
 def process_uid(uid):
     base_dir = current_app.config['BASE_DIR']
