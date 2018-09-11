@@ -43,7 +43,6 @@ def get_thumbnail_candidates(uid):
 	# create candidate files, if do they not exist
     if not candidate_files:
         print ('No candidates found')
-        # TODO: we don't need to return the entire path, just the candidate filename
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 	
     return json.dumps(candidate_files)
@@ -70,18 +69,18 @@ def set_thumbnail(uid):
 def create_candidate_thumbnails(candidates_dir, file_uid, duration):
     print ('create_candidate_thumbnails: candidates_dir =', candidates_dir)
 	
-    candidates_filenames = []
+    candidates_files = []
     for index in range(10):
         video_url = paths.get_video_file_url(file_uid)
         thumbnail_time = get_random_thumbnail_time(duration)
-        thumb_filename = 'c_' + str(thumbnail_time)
-        thumb_file = os.path.join(candidates_dir, thumb_filename + '.jpg')
+        thumb_filename = 'c_' + str(thumbnail_time) + '.jpg'
+        thumb_file = os.path.join(candidates_dir, thumb_filename)
         ret_code = create_thumb_file(video_url, thumbnail_time, thumb_file)
         if ret_code == 0:
-            candidates_filenames.append(thumb_file_name)
+            candidates_files.append(thumb_file)
         else:
             print ("candidate thumbnail was not created, reason: %s" % ret_code)
-    return candidates_filenames
+    return candidates_files
 
 def get_random_thumbnail_time(duration):
     ''' Returns a random time for a thumbnail.
