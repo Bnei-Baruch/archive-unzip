@@ -62,7 +62,11 @@ def set_thumbnail(uid):
     if not os.path.exists(candidates_dir):
         return make_response("no candidates for uid", 500)
 
-    candidate_file = os.path.join(candidates_dir + '/' + data.candidate + '.jpg')
+    candidate_file = os.path.normpath(os.path.join(candidates_dir, data.candidate + '.jpg'))
+    if os.path.commonprefix([candidates_dir, candidate_file]) != candidates_dir:
+        print ("Setting candidate with bad data.candidate: %s" % data.candidate)
+        return make_response("really?", 400)
+
     if not os.path.exists(candidate_file):
         return make_response("bad candidate for uid", 500)
 
