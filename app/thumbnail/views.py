@@ -45,6 +45,7 @@ def get_thumbnail_candidates(uid):
         print ('No candidates found')
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 
+    # prepare the response
     response = { candidates: [] }
     for candidate_file : candidate_files:
         filename = os.path.splitext(os.path.basename(candidate_file))[0]
@@ -52,19 +53,17 @@ def get_thumbnail_candidates(uid):
 	
     return json.dumps(response)
 
-# TODO(yaniv): errors should change to be generic errors 
-# with logs of failures until we have authorization.
 @blueprint.route('/<uid>', methods=['POST'])
 def set_thumbnail(uid):
     print('saving thumbnail')
     data = request.form;
     candidates_dir = paths.get_candidates_folder(uid)
     if not os.path.exists(candidates_dir):
-        return make_response("no candidates for uid", 500)
+        return make_response("no candidates for uid", 404)
 
     candidate_file = os.path.normpath(os.path.join(candidates_dir, data.candidate + '.jpg'))
     if os.path.commonprefix([candidates_dir, candidate_file]) != candidates_dir:
-        print ("Setting candidate with bad data.candidate: %s" % data.candidate)
+        print ("Saving thumbnail with bad candidate: %s" % data.candidate)
         return make_response("really?", 400)
 
     if not os.path.exists(candidate_file):
@@ -134,7 +133,6 @@ def process_uid(uid):
     os.makedirs(uid_dir, exist_ok=True)
 
     # make thumbnail from file
-    ffmpeg_bin = current_app.config['FFMPEG_BIN']
     for file_uid, duration in candidates:
         video_url = paths.get_video_file_url(file_uid)
         thumbnail_time = get_random_thumbnail_time(duration)
