@@ -59,10 +59,11 @@ def get_current_thumbnail_file(uid):
 def get_candidates_folder(uid):
     return os.path.join(get_uid_folder(uid), '.candidates/')
 
-blueprint = Blueprint('thumbnail_candidates', __name__, url_prefix='/thumbnail_candidates')
-@blueprint.route('/<uid>')
+
+@blueprint.route('thumbnail_candidates/<uid>')
 def thumbnail_candidates(uid):
-    print ('start thumbnail_candidates')
+    print ('--> start thumbnail_candidates')
+  
 	# find representative video file
     file_uid, duration = get_representative_file(uid)
     if file_uid is None:
@@ -98,19 +99,29 @@ def create_candidate_thumbnails(candidates_dir, file_uid, duration):
 
 #  file format: c_<offset>.jpg
 def createThumbFile(candidates_dir, file_uid, duration):
-    print ('start createThumbFile. file_uid=', file_uid, 'duration=', duration)
+    print ('--> start createThumbFile. file_uid=', file_uid, 'duration=', duration)
 	
-    url = current_app.config['LINKER_URL'] + file_uid + ".mp4"
-    
+    url = get_video_url(file_uid)
+    print ('--> --> start createThumbFile. url={0}'.format(url))
     ss = "00:00:05"
     pos = 5
     if duration > 5:
         pos = random.randint(5, min(duration, 5 * 60))
         ss = str(datetime.timedelta(seconds=pos))
-    
+      
     thumb_file_name = 'c_' + str(pos) + '.jpg'
+    print ('--> --> start createThumbFile. pos={0}  delta={1} file={2}'.format(pos, ss, thumb_file_name))
     thumb_file = os.path.join(candidates_dir, thumb_file_name)
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
+    call_ffmpeg(ffmpeg_bin, ss, url, thumb_file)
+    print ('created ThumbFile =', thumb_file)
+
+    return thumb_file
+
+def get_video_url(file_uid):
+    return current_app.config['LINKER_URL'] + file_uid + ".mp4"
+
+def call_ffmpeg(ffmpeg_bin, ss, url, thumb_file):
     call([ffmpeg_bin, '-y',
           "-ss", ss,
           "-i", url,
@@ -118,10 +129,6 @@ def createThumbFile(candidates_dir, file_uid, duration):
           "-vframes", "1",
           "-format", "image2",
           thumb_file])
-    print ('created ThumbFile =', thumb_file)
-
-    return thumb_file
-
 
 def process_uid(uid):
     base_dir = current_app.config['BASE_DIR']
