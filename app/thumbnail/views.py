@@ -44,8 +44,13 @@ def get_thumbnail_candidates(uid):
     if not candidate_files:
         print ('No candidates found')
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
+
+    response = { candidates: [] }
+    for candidate_file : candidate_files:
+        filename = os.path.splitext(os.path.basename(candidate_file))[0]
+        response.candidates.append({ candidate: filename, url: candidate_file })
 	
-    return json.dumps(candidate_files)
+    return json.dumps(response)
 
 # TODO(yaniv): errors should change to be generic errors 
 # with logs of failures until we have authorization.
