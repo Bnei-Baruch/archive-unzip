@@ -2,6 +2,8 @@ assets/
 
 .idea/
 **/*.iml
+**/*.pyc
+.pytest_cache/
 
 bin/
 include/

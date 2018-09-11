@@ -59,8 +59,8 @@ def test_get_candidates(client, monkeypatch):
 
     monkeypatch.setattr(app.thumbnail.views, 'get_representative_file',mock_get_representative_file)
     monkeypatch.setattr(app.thumbnail.views, 'get_candidates_folder',mock_get_candidates_folder)       
-    monkeypatch.setattr(app.thumbnail.views, 'get_video_url',mock_get_video_url)       
-    monkeypatch.setattr(app.thumbnail.views, 'call_ffmpeg',mock_call_ffmpeg)       
+    #monkeypatch.setattr(app.thumbnail.views, 'get_video_url',mock_get_video_url)       
+    #monkeypatch.setattr(app.thumbnail.views, 'call_ffmpeg',mock_call_ffmpeg)       
 
     # test algorithm
     print('--> --> get(/thumbnail/thumbnail_candidates/unit_11')

@@ -1,188 +1,137 @@
+
+from . import paths
+
 import datetime
 import os
 import random
 import glob
 import json
 from subprocess import call
+from shutil import copyfile
 
 from flask import Blueprint, current_app
 from flask.helpers import make_response
 
-MODULE_DIR = 'thumbnail'
-THUMB_FILE = 'thumb_orig.jpg'
-
-REPRESENTATIVE_FILE_SQL = """
-select
-  f.uid,
-  (round((f.properties ->> 'duration') :: real)) :: int as duration
-from files f
-  inner join content_units cu on f.content_unit_id = cu.id
-                                 and cu.uid = %s
-                                 and f.secure = 0
-                                 and f.published is true
-                                 and f.name ~ '\.mp4$'
-order by
-  case
-  when (f.properties ->> 'video_size' = 'FHD')
-    then 1
-  when (f.properties ->> 'video_size' = 'HD')
-    then 2
-  else 3
-  end,
-coalesce(array_position('{he, ru, en, es}', f.language), 99)
- """
-
 blueprint = Blueprint('thumbnail', __name__, url_prefix='/thumbnail')
 
-
-@blueprint.route('/<uid>')
-def thumbnail(uid):
+@blueprint.route('/<uid>', methods=['GET'])
+def get_thumbnail(uid):
     file_path = process_uid(uid)
     if file_path:
         return current_app.sendfile.send_file(file_path)
     else:
         return make_response("missing info", 404)
 
-# Get the parent folder path for the uid
-def get_uid_folder(uid):
-    base_dir = current_app.config['BASE_DIR']
-    output_dir = os.path.join(base_dir, MODULE_DIR)
-    uid_dir = os.path.join(output_dir, uid)
-
-    return uid_dir
-
-# Get the path to the current thumbnail
-def get_current_thumbnail_file(uid):
-    return os.path.join(get_uid_folder(uid), THUMB_FILE)
-
-# Get the candidates folder path
-def get_candidates_folder(uid):
-    return os.path.join(get_uid_folder(uid), '.candidates/')
-
-
-@blueprint.route('thumbnail_candidates/<uid>')
-def thumbnail_candidates(uid):
-    print ('--> start thumbnail_candidates')
-  
+@blueprint.route('/candidates/<uid>', methods=['GET'])
+def get_thumbnail_candidates(uid):
+    print ('start thumbnail_candidates')
 	# find representative video file
-    file_uid, duration = get_representative_file(uid)
+    file_uid, duration = paths.get_representative_file(uid)
     if file_uid is None:
 	    print ('No video file found')
 	    return None
     print ('video file_uid =', file_uid, 'duration =', duration)
     
-    candidates_dir = get_candidates_folder(uid)
+    candidates_dir = paths.get_candidates_folder(uid)
     os.makedirs(candidates_dir, exist_ok=True)
 
     print ('candidates_dir =', candidates_dir)
 	
 	# get candidate files from dir 
-    candidate_files = glob.glob(candidates_dir + '/c_*.jpg')
+    candidate_files = glob.glob(candidates_dir + '/c_*.jpg', recursive=False)
 	
-	# create candidate files, if do not exist
+	# create candidate files, if do they not exist
     if not candidate_files:
         print ('No candidates found')
+        # TODO: we don't need to return the entire path, just the candidate filename
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 	
     return json.dumps(candidate_files)
 
+# TODO(yaniv): errors should change to be generic errors 
+# with logs of failures until we have authorization.
+@blueprint.route('/<uid>', methods=['POST'])
+def set_thumbnail(uid):
+    print('saving thumbnail')
+    data = request.form;
+    candidates_dir = paths.get_candidates_folder(uid)
+    if not os.path.exists(candidates_dir):
+        return make_response("no candidates for uid", 500)
+
+    candidate_file = os.path.join(candidates_dir + '/' + data.candidate + '.jpg')
+    if not os.path.exists(candidate_file):
+        return make_response("bad candidate for uid", 500)
+
+    current_thumbnail_file = paths.get_current_thumbnail_file(uid)
+    shutil.copyfile(candidate_file, current_thumbnail_file)
+
+    return make_response(current_thumbnail_file, 200);
 
 def create_candidate_thumbnails(candidates_dir, file_uid, duration):
     print ('create_candidate_thumbnails: candidates_dir =', candidates_dir)
 	
-    candidates_files = []
+    candidates_filenames = []
     for index in range(10):
-        thumb_file = createThumbFile(candidates_dir, file_uid, duration)
-        candidates_files.append(thumb_file)
-    return candidates_files
+        video_url = paths.get_video_file_url(file_uid)
+        thumbnail_time = get_random_thumbnail_time(duration)
+        thumb_filename = 'c_' + str(thumbnail_time)
+        thumb_file = os.path.join(candidates_dir, thumb_filename + '.jpg')
+        ret_code = create_thumb_file(video_url, thumbnail_time, thumb_file)
+        if ret_code == 0:
+            candidates_filenames.append(thumb_file_name)
+        else:
+            print ("candidate thumbnail was not created, reason: %s" % ret_code)
+    return candidates_filenames
 
+def get_random_thumbnail_time(duration):
+    ''' Returns a random time for a thumbnail.
 
-#  file format: c_<offset>.jpg
-def createThumbFile(candidates_dir, file_uid, duration):
-    print ('--> start createThumbFile. file_uid=', file_uid, 'duration=', duration)
-	
-    url = get_video_url(file_uid)
-    print ('--> --> start createThumbFile. url={0}'.format(url))
-    ss = "00:00:05"
-    pos = 5
-    if duration > 5:
-        pos = random.randint(5, min(duration, 5 * 60))
-        ss = str(datetime.timedelta(seconds=pos))
-      
-    thumb_file_name = 'c_' + str(pos) + '.jpg'
-    print ('--> --> start createThumbFile. pos={0}  delta={1} file={2}'.format(pos, ss, thumb_file_name))
-    thumb_file = os.path.join(candidates_dir, thumb_file_name)
+    The returned value is in a "HH:MM:SS" format.
+    '''
+    min_seconds = 5
+    max_seconds = 5 * 60 # 3 minutes
+    thumbnail_time = str(datetime.timedelta(seconds=min_seconds))
+    if duration > min_seconds:
+        pos = random.randint(min_seconds, min(duration, max_seconds))
+        thumbnail_time = str(datetime.timedelta(seconds=pos))
+
+    return thumbnail_time
+
+def create_thumb_file(video_url, thumbnail_time, thumbnail_file):
+    ''' Creates a random JPG thumbnail from the supplied video file. '''
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
-    call_ffmpeg(ffmpeg_bin, ss, url, thumb_file)
-    print ('created ThumbFile =', thumb_file)
-
-    return thumb_file
-
-def get_video_url(file_uid):
-    return current_app.config['LINKER_URL'] + file_uid + ".mp4"
-
-def call_ffmpeg(ffmpeg_bin, ss, url, thumb_file):
-    call([ffmpeg_bin, '-y',
-          "-ss", ss,
+    ret_code = call([ffmpeg_bin, '-y',
+          "-ss", thumbnail_time,
           "-i", url,
           "-vf", "thumbnail",
           "-vframes", "1",
           "-format", "image2",
-          thumb_file])
+          thumbnail_file])
+
+    return ret_code
 
 def process_uid(uid):
-    base_dir = current_app.config['BASE_DIR']
-    output_dir = os.path.join(base_dir, MODULE_DIR)
-    os.makedirs(output_dir, exist_ok=True)
-
-    uid_dir = os.path.join(output_dir, uid)
-    thumb_file = os.path.join(uid_dir, THUMB_FILE)
-
+    thumb_file = paths.get_current_thumbnail_file(uid)
     # file already exist ?
     if os.path.exists(thumb_file):
         return thumb_file
 
     # find representative video file
-    candidates = get_representative_file(uid)
+    candidates = paths.get_representative_file(uid)
     if not candidates:
         return None
 
-    # make thumbnail from file
+    # make sure the unit id directory exists
+    uid_dir = os.path.join(output_dir, uid)
     os.makedirs(uid_dir, exist_ok=True)
 
+    # make thumbnail from file
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
     for file_uid, duration in candidates:
-        url = current_app.config['LINKER_URL'] + file_uid + ".mp4"
-
-        ss = "00:00:05"
-        if duration > 5:
-            pos = random.randint(5, min(duration, 5 * 60))
-            ss = str(datetime.timedelta(seconds=pos))
-
-        ret_code = call([ffmpeg_bin, '-y',
-                        "-ss", ss,
-                        "-i", url,
-                        "-vf", "thumbnail",
-                        "-vframes", "1",
-                        "-format", "image2",
-                        thumb_file])
+        video_url = paths.get_video_file_url(file_uid)
+        thumbnail_time = get_random_thumbnail_time(duration)
+        ret_code = create_thumb_file(video_url, thumbnail_time, thumb_file)
         if ret_code == 0:
             return thumb_file
 
     return None
-
-
-def get_representative_file(unit_id):
-    """ return the file uid from unit uid """
-    with current_app.mdb.get_cursor() as cur:
-        cur.execute(REPRESENTATIVE_FILE_SQL, (unit_id,))
-<<<<<<< HEAD
-        data = cur.fetchall()
-        return [(row['uid'], row['duration']) for row in data]
-=======
-        d = cur.fetchone()
-        if d:
-            return d['uid'], d['duration']
-        return None, 0
-
->>>>>>> 80b57b7e110b048b4d3db1fd12cea4ce67509433
