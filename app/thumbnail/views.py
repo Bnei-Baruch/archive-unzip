@@ -24,34 +24,51 @@ def get_thumbnail(uid):
 
 @blueprint.route('/candidates/<uid>', methods=['GET'])
 def get_thumbnail_candidates(uid):
-    print ('start thumbnail_candidates')
+    print ('--> start thumbnail_candidates')
 	# find representative video file
     file_uid, duration = paths.get_representative_file(uid)
     if file_uid is None:
-	    print ('No video file found')
+	    print ('--> --> No video file found')
 	    return None
-    print ('video file_uid =', file_uid, 'duration =', duration)
+    print ('--> --> video file_uid =', file_uid, 'duration =', duration)
     
     candidates_dir = paths.get_candidates_folder(uid)
-    print ('candidates_dir =', candidates_dir)
+    print ('--> --> candidates_dir =', candidates_dir)
     os.makedirs(candidates_dir, exist_ok=True)
    	
 	# get candidate files from dir 
-    candidate_files = glob.glob(candidates_dir + '/c_*.jpg', recursive=False)
+    candidate_files = glob.glob(os.path.join(candidates_dir, '/c_*.jpg'), recursive=False)
 	
 	# create candidate files, if do they not exist
     if not candidate_files:
-        print ('No candidates found')
+        print ('--> --> No candidates found')
         candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 
-    # prepare the response
-   
+    # prepare the json response text
+    # {
+    #    candidates:
+    #    [
+    #       { 
+    #           'candidate' : <file_without_extension_1>, 
+    #           'url' : <candidate_url_1>
+    #       } ,
+    #
+    #       { 
+    #           'candidate' : <file_without_extension_2>, 
+    #           'url' : <candidate_url_2>
+    #       },
+    #       ..
+    #       ..
+    #       ..
+    #    ]
+    # }
     response = { 'candidates' : [] }
-    for candidate_file in candidate_files:
-        print ('candidate_file={0}  basename={1}'.format(candidate_file, os.path.basename(candidate_file)))
-        filename = os.path.splitext(os.path.basename(candidate_file))[0]
-        print ('filename={0} candidate_file={1}'.format(filename, candidate_file))
-        response['candidates'].append({ 'candidate' : filename, 'url' : candidate_file })
+    for candidate_url in candidate_files:
+        file_name = os.path.basename(candidate_url)
+        print ('--> --> candidate_url={0}  file_name={1}'.format(candidate_url, file_name))
+        file_name_no_extention = os.path.splitext(file_name)[0]
+        print ('--> --> file_name_no_extention={0} candidate_url={1}'.format(file_name_no_extention, candidate_url))
+        response['candidates'].append({ 'candidate' : file_name_no_extention, 'url' : candidate_url })
 	
    
     return json.dumps(response)
@@ -59,7 +76,7 @@ def get_thumbnail_candidates(uid):
 @blueprint.route('/<uid>', methods=['POST'])
 def set_thumbnail(uid):
     print('saving thumbnail')
-    data = request.form;
+    data = request.form
     candidates_dir = paths.get_candidates_folder(uid)
     if not os.path.exists(candidates_dir):
         return make_response("no candidates for uid", 404)
@@ -75,7 +92,7 @@ def set_thumbnail(uid):
     current_thumbnail_file = paths.get_current_thumbnail_file(uid)
     shutil.copyfile(candidate_file, current_thumbnail_file)
 
-    return make_response(current_thumbnail_file, 200);
+    return make_response(current_thumbnail_file, 200)
 
 def create_candidate_thumbnails(candidates_dir, file_uid, duration):
     print ('--> create_candidate_thumbnails: candidates_dir={0} file_uid={1}  duration={2} '.format(candidates_dir, file_uid, duration))
@@ -86,6 +103,7 @@ def create_candidate_thumbnails(candidates_dir, file_uid, duration):
         thumbnail_time, pos = get_random_thumbnail_time(duration)
         thumb_filename = 'c_' + str(pos) + '.jpg'
         thumb_file = os.path.join(candidates_dir, thumb_filename)
+        print ('candidates_dir={0}  thumb_filename={1}  final_thumb_file={2}  '.format(candidates_dir, thumb_filename, thumb_file))
         ret_code = create_thumb_file(video_url, thumbnail_time, thumb_file)
         if ret_code == 0:
             candidates_files.append(thumb_file)
