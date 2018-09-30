@@ -78,6 +78,9 @@ def get_thumbnail_candidates(uid):
     except:
         message = 'Unexpected error. type={0}  message={1}'.format(sys.exc_info()[0], sys.exc_info()[1])
         print('--> --> returning error code 601 with info: ' + message)
+        print('--> --> try deleting candidates files')
+        delete_candidate_dir(uid)
+        print('--> --> try deleting candidates files 2')
         return make_response(message, 601)
 
 @blueprint.route('/<uid>', methods=['POST'])
@@ -172,5 +175,12 @@ def process_uid(uid):
 
     return None
 
-def delete_candidate_dir(base_dir):
-    rmtree(os.path.join(base_dir, CANDIDATES_DIR), True)
+def delete_candidate_dir(uid):
+    try:
+        print('\n--> delete_candidate_dir ')
+        dir_to_delete = paths.get_candidates_folder(uid)
+        print('--> --> unit={0}  dir to delete={1}'.format(uid, dir_to_delete))
+        rmtree(dir_to_delete, True)
+    except:
+        message = '--> --> Unexpected error. type={0}  message={1}'.format(sys.exc_info()[0], sys.exc_info()[1])
+        print(message)

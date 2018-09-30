@@ -44,7 +44,7 @@ def get_current_thumbnail_file(uid):
 
 def get_candidates_folder(uid):
     """ Returns the candidate thumbnails folder path for the unit """
-    return os.path.join(get_uid_folder(uid), '.candidates/')
+    return os.path.join(get_uid_folder(uid), CANDIDATES_DIR)
 
 def get_video_file_url(file_uid):
     return current_app.config['LINKER_URL'] + file_uid + ".mp4"

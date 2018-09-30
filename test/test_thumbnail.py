@@ -10,12 +10,13 @@ from app.app import create_app
 from app.thumbnail import views, paths
 
 flask_app = create_app() 
+
+# delete candidates dir
 test_dir_path = os.path.dirname(os.path.realpath(__file__))
-views.delete_candidate_dir(test_dir_path)
+shutil.rmtree(os.path.join(test_dir_path, '.candidates'), True)
 
 #global
 mock_randint_value=0
-
 
 @pytest.fixture
 def client():
@@ -232,8 +233,8 @@ def test_error_code_video_not_found(client, monkeypatch):
     mock_randint_value = 5
    
     print('--> --> test dir = {0}'.format(test_dir_path))
-    print('--> --> candidates dir = {0}'.format(candidates_dir))
-
+    print('--> --> creating candidates dir = {0}'.format(candidates_dir))
+    os.makedirs(candidates_dir, exist_ok=True)
     # test algorithm
     print('--> --> Test URL route: get(/thumbnail/candidates/unit_11')
    
@@ -246,11 +247,15 @@ def test_error_code_video_not_found(client, monkeypatch):
         print('\nTest Error !!  expected return code={0}  is not equal to actual return code={1}'.format(601, rv.status_code))
         test_pass = False
     
+    if os.path.isdir(candidates_dir):
+        print('\nTest Error !!  expected that candidates dir={0} will be deleted but it exists'.format(candidates_dir))
+        test_pass = False
+
     clear_test()
 
     assert test_pass
 
 def clear_test():
     print ('\n--> Start clear test')
-    views.delete_candidate_dir(test_dir_path)
+    views.delete_candidate_dir('dummy')
 
