@@ -5,6 +5,9 @@ MODULE_DIR = 'thumbnail'
 # Name of the current thumbnail file of each unit.
 THUMB_FILE = 'thumb_orig.jpg'
 
+# Candidates dir where all candidates are created.
+CANDIDATES_DIR = '.candidates'
+
 # SQL query to fetch the file data enough to get the unit's video file path.
 REPRESENTATIVE_FILE_SQL = """
 select

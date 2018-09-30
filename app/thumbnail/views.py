@@ -1,5 +1,6 @@
 
 from . import paths
+from app.thumbnail.paths import CANDIDATES_DIR
 
 import datetime
 import os
@@ -7,7 +8,7 @@ import random
 import glob
 import json
 from subprocess import call
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 from flask import Blueprint, current_app
 from flask.helpers import make_response
@@ -24,7 +25,7 @@ def get_thumbnail(uid):
 
 @blueprint.route('/candidates/<uid>', methods=['GET'])
 def get_thumbnail_candidates(uid):
-    print ('--> start thumbnail_candidates')
+    print ('\n--> start thumbnail_candidates')
 	# find representative video file
     file_uid, duration = paths.get_representative_file(uid)
     if file_uid is None:
@@ -103,12 +104,12 @@ def create_candidate_thumbnails(candidates_dir, file_uid, duration):
         thumbnail_time, pos = get_random_thumbnail_time(duration)
         thumb_filename = 'c_' + str(pos) + '.jpg'
         thumb_file = os.path.join(candidates_dir, thumb_filename)
-        print ('candidates_dir={0}  thumb_filename={1}  final_thumb_file={2}  '.format(candidates_dir, thumb_filename, thumb_file))
+        print ('--> --> candidates_dir={0}  thumb_filename={1}  final_thumb_file={2}  '.format(candidates_dir, thumb_filename, thumb_file))
         ret_code = create_thumb_file(video_url, thumbnail_time, thumb_file)
         if ret_code == 0:
             candidates_files.append(thumb_file)
         else:
-            print ("candidate thumbnail was not created, reason: %s" % ret_code)
+            print ("--> --> candidate thumbnail was not created, reason: %s" % ret_code)
     return candidates_files
 
 def get_random_thumbnail_time(duration):
@@ -127,7 +128,7 @@ def get_random_thumbnail_time(duration):
 
 def create_thumb_file(video_url, thumbnail_time, thumbnail_file):
     ''' Creates a random JPG thumbnail from the supplied video file. '''
-    print('create_thumb_file video_url={0}  thumbnail_time={1}  thumbnail_file={2}'.format(video_url, thumbnail_time, thumbnail_file))
+    print('\n\n-->create_thumb_file video_url={0}  thumbnail_time={1}  thumbnail_file={2}'.format(video_url, thumbnail_time, thumbnail_file))
     ffmpeg_bin = current_app.config['FFMPEG_BIN']
     return call_ffmpeg(ffmpeg_bin, thumbnail_time, video_url, thumbnail_file)   
 
@@ -164,3 +165,6 @@ def process_uid(uid):
             return thumb_file
 
     return None
+
+def delete_candidate_dir(base_dir):
+    rmtree(os.path.join(base_dir, CANDIDATES_DIR), True)
