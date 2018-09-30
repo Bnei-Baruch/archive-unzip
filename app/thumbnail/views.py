@@ -80,7 +80,6 @@ def get_thumbnail_candidates(uid):
         print('--> --> returning error code 601 with info: ' + message)
         print('--> --> try deleting candidates files')
         delete_candidate_dir(uid)
-        print('--> --> try deleting candidates files 2')
         return make_response(message, 601)
 
 @blueprint.route('/<uid>', methods=['POST'])
