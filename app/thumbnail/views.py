@@ -7,6 +7,7 @@ import os
 import random
 import glob
 import json
+import sys
 from subprocess import call
 from shutil import copyfile, rmtree
 
@@ -25,54 +26,59 @@ def get_thumbnail(uid):
 
 @blueprint.route('/candidates/<uid>', methods=['GET'])
 def get_thumbnail_candidates(uid):
-    print ('\n--> start thumbnail_candidates')
-	# find representative video file
-    file_uid, duration = paths.get_representative_file(uid)
-    if file_uid is None:
-	    print ('--> --> No video file found')
-	    return None
-    print ('--> --> video file_uid =', file_uid, 'duration =', duration)
+    try:
+        print ('\n--> start thumbnail_candidates')
+	    # find representative video file
+        file_uid, duration = paths.get_representative_file(uid)
+        if file_uid is None:
+	        print ('--> --> No video file found')
+	        raise Exception('No video file found')        
+        print ('--> --> video file_uid =', file_uid, 'duration =', duration)
     
-    candidates_dir = paths.get_candidates_folder(uid)
-    print ('--> --> candidates_dir =', candidates_dir)
-    os.makedirs(candidates_dir, exist_ok=True)
+        candidates_dir = paths.get_candidates_folder(uid)
+        print ('--> --> candidates_dir =', candidates_dir)
+        os.makedirs(candidates_dir, exist_ok=True)
    	
-	# get candidate files from dir 
-    candidate_files = glob.glob(os.path.join(candidates_dir, '/c_*.jpg'), recursive=False)
-	
-	# create candidate files, if do they not exist
-    if not candidate_files:
-        print ('--> --> No candidates found')
-        candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
+        # get candidate files from dir 
+        candidate_files = glob.glob(os.path.join(candidates_dir, '/c_*.jpg'), recursive=False)
+        
+        # create candidate files, if do they not exist
+        if not candidate_files:
+            print ('--> --> No candidates found')
+            candidate_files = create_candidate_thumbnails(candidates_dir, file_uid, duration)
 
-    # prepare the json response text
-    # {
-    #    candidates:
-    #    [
-    #       { 
-    #           'candidate' : <file_without_extension_1>, 
-    #           'url' : <candidate_url_1>
-    #       } ,
-    #
-    #       { 
-    #           'candidate' : <file_without_extension_2>, 
-    #           'url' : <candidate_url_2>
-    #       },
-    #       ..
-    #       ..
-    #       ..
-    #    ]
-    # }
-    response = { 'candidates' : [] }
-    for candidate_url in candidate_files:
-        file_name = os.path.basename(candidate_url)
-        print ('--> --> candidate_url={0}  file_name={1}'.format(candidate_url, file_name))
-        file_name_no_extention = os.path.splitext(file_name)[0]
-        print ('--> --> file_name_no_extention={0} candidate_url={1}'.format(file_name_no_extention, candidate_url))
-        response['candidates'].append({ 'candidate' : file_name_no_extention, 'url' : candidate_url })
-	
-   
-    return json.dumps(response)
+        # prepare the json response text
+        # {
+        #    candidates:
+        #    [
+        #       { 
+        #           'candidate' : <file_without_extension_1>, 
+        #           'url' : <candidate_url_1>
+        #       } ,
+        #
+        #       { 
+        #           'candidate' : <file_without_extension_2>, 
+        #           'url' : <candidate_url_2>
+        #       },
+        #       ..
+        #       ..
+        #       ..
+        #    ]
+        # }
+        response = { 'candidates' : [] }
+        for candidate_url in candidate_files:
+            file_name = os.path.basename(candidate_url)
+            print ('--> --> candidate_url={0}  file_name={1}'.format(candidate_url, file_name))
+            file_name_no_extention = os.path.splitext(file_name)[0]
+            print ('--> --> file_name_no_extention={0} candidate_url={1}'.format(file_name_no_extention, candidate_url))
+            response['candidates'].append({ 'candidate' : file_name_no_extention, 'url' : candidate_url })
+        
+        return make_response(json.dumps(response), 600)
+
+    except:
+        message = 'Unexpected error. type={0}  message={1}'.format(sys.exc_info()[0], sys.exc_info()[1])
+        print('--> --> returning error code 601 with info: ' + message)
+        return make_response(message, 601)
 
 @blueprint.route('/<uid>', methods=['POST'])
 def set_thumbnail(uid):
