@@ -14,6 +14,7 @@ threads = 2
 env = LINKER_URL=
 env = BASE_DIR=
 env = SOFFICE_BIN=
+env = SOFFICE_LOCK_FILE=
 env = FFMPEG_BIN=
 env = MDB_URL=
 env = MDB_POOL_SIZE=

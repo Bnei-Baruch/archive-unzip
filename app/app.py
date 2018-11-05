@@ -29,7 +29,10 @@ def create_app(env_name='dev', **kwargs):
     # register blueprints
     app.register_blueprint(health.views.blueprint)
     app.register_blueprint(unzip.views.blueprint)
-    app.register_blueprint(doc2html.views.blueprint)
+    app.register_blueprint(doc2html.views.htmlBlueprint)
+    app.register_blueprint(doc2html.views.docxBlueprint)
+    app.register_blueprint(doc2html.views.textBlueprint)
+    app.register_blueprint(doc2html.views.prepareBlueprint)
     app.register_blueprint(thumbnail.views.blueprint)
 
     # register error handlers

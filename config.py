@@ -13,8 +13,18 @@ class Config(object):
 
     # Warning: symlinks don't work, see https://superuser.com/a/1089693
     SOFFICE_BIN = os.environ.get('SOFFICE_BIN', '/Applications/LibreOffice.app/Contents/MacOS/soffice')
+    SOFFICE_LOCK_FILE = os.environ.get('SOFFICE_LOCK_FILE', '/tmp/soffice.lock.file')
 
     FFMPEG_BIN = os.environ.get('FFMPEG_BIN', '/usr/bin/ffmpeg')
+
+    print('BASE_DIR: %s' % (BASE_DIR))
+    print('LINKER_URL: %s' % (LINKER_URL))
+    print('PUBLIC_PATH: %s' % (PUBLIC_PATH))
+    print('MDB_URL: %s' % (MDB_URL))
+    print('MDB_POOL_SIZE: %s' % (MDB_POOL_SIZE))
+    print('SOFFICE_BIN: %s' % (SOFFICE_BIN))
+    print('SOFFICE_LOCK_FILE: %s' % (SOFFICE_LOCK_FILE))
+    print('FFMPEG_BIN: %s' % (FFMPEG_BIN))
 
 
 class ProductionConfig(Config):
