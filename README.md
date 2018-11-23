@@ -1,10 +1,16 @@
-## Server Setup
-```bash
-$ pip install -r requirements.txt
-$ export FLASK_APP=autoapp.py
-$ flask run
- * Running on http://localhost:5000/
+## Docker installation
+Build the image with:
+```shell
+docker build -t archive-unzip:latest .
 ```
+
+run the image with:
+```shell
+docker run --network host --env MDB_URL='postgres://user:password@host/mdb?sslmode=disable' archive-unzip
+```
+*Important* the MDB_URL host must accessible from within the container.      
+
+The app should now be ready on port 5000 !
 
 ## Dependencies
 
