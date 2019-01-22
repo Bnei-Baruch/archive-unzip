@@ -9,3 +9,4 @@ Werkzeug==0.12.2
 requests
 psycopg2
 python-docx
+uWSGI

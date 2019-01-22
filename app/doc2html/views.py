@@ -124,7 +124,7 @@ def process_docx_uid(uids):
                 filename if file_types[idx] == 'docx' else '%sx' % filename)
 
             docx_exists = os.path.exists(dest_docx)
-            if (file_types[idx] == 'doc' and not docx_exists):
+            if file_types[idx] == 'doc' and not docx_exists:
                 doc_to_docx_list[idx] = filename
             else:
                 # The file is docx or dest docx exists.
