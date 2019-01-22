@@ -1,8 +1,13 @@
 import os
 import subprocess
+import multiprocessing
 
 import pypandoc
 import tidylib
+
+from docx import Document
+
+soffice_lock = multiprocessing.Lock()
 
 tidy_options = {
     "clean": "yes",
@@ -18,39 +23,65 @@ tidy_options = {
 }
 
 
-def doc_to_docx(doc_file, soffice_bin, logger):
-    if not os.path.exists(doc_file):
-        raise IOError('File not found: [%s]' % doc_file)
+# Timeouts for doc_to_docx. Larger files, i.e., >1Mb might take 10 seconds.
+SOFFICE_OUTSIDE_LOCK_TIMEOUT = 60*15  # 15 minutes
+SOFFICE_INSIDE_LOCK_TIMEOUT = 600     # 10 minutes.
+SOFFICE_SETUP_TIME = 5                # 5 seconds.
+SOFFICE_PER_FILE_TIMEOUT = 12         # 12 seconds.
 
-    logger.debug("Start doc->docx convertion. Path: %s", doc_file)
 
-    working_dir = os.path.dirname(doc_file)
-    cmd = '%s --headless --convert-to docx --outdir %s %s' % (soffice_bin, working_dir, doc_file)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    try:
-        stdout, stderr = p.communicate(timeout=15)
-    except TimeoutError:
-        p.kill()
-        raise
+# May have None in |doc_files|, order is important.
+def doc_to_docx(folder, files, soffice_bin, logger):
+    ret = [None]*len(files)
+    not_none_files = [f for f in files if f is not None]
+    for f in not_none_files:
+        if not os.path.exists(os.path.join(folder, f)):
+            return ret, 404, 'File not found: [%s]' % os.path.join(folder, f)
+    cmd = '%s --headless --convert-to docx --outdir %s %s' % (
+        soffice_bin, folder, ' '.join([os.path.join(folder, f)
+                                       for f in not_none_files]))
+    if not soffice_lock.acquire(block=True,
+                                timeout=SOFFICE_OUTSIDE_LOCK_TIMEOUT):
+        soffice_lock.release()
+        return ret, 503, 'Timedout when trying to lock Soffice.'
     else:
-        logger.debug(stdout.decode(encoding='UTF-8'))
-        if len(stderr) > 0:
-            raise IOError(stderr)
-
-    logger.debug("Done converting from doc to docx")
-
-    return doc_file + 'x'
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, shell=True)
+        try:
+            timeout = min(SOFFICE_INSIDE_LOCK_TIMEOUT,
+                          max(SOFFICE_SETUP_TIME,
+                              SOFFICE_PER_FILE_TIMEOUT*len(not_none_files)))
+            stdout, stderr = p.communicate(timeout=timeout)
+            success_uids = []
+            fail_uids = []
+            for idx, doc_path in enumerate(files):
+                if doc_path is not None:
+                    dest_docx = os.path.join(folder, doc_path + 'x')
+                    if os.path.exists(dest_docx):
+                        ret[idx] = dest_docx
+                        success_uids.append(dest_docx)
+                    else:
+                        fail_uids.append(dest_docx)
+                        ret[idx] = None
+                else:
+                    ret[idx] = None
+            assert(len(not_none_files) ==
+                   len(success_uids) + len(fail_uids))
+            if len(not_none_files) and not len(success_uids):
+                return ret, 503, 'Soffice failed did not convert anything.'
+            return ret, 200, ''
+        except subprocess.TimeoutExpired:
+            logger.error('Soffice timeout for %s.' % cmd)
+            return ret, 503, 'Soffice timeout.'
+        finally:
+            soffice_lock.release()
 
 
 def docx_to_html(src, dest, logger):
     if not os.path.exists(src):
         raise IOError('File not found: [%s]' % src)
-
-    logger.debug("Start docx->html conversion (pandoc) src: %s, dest: %s", src, dest)
     pypandoc.convert_file(src, to='html5', extra_args=['-s'], outputfile=dest)
-    logger.debug("Done converting from docx to html (pandoc) src: %s, dest: %s", src, dest)
 
-    logger.debug("Start to tidy html. Input file [%s]", dest)
     with open(dest, 'r') as f:
         html = f.read().replace('\n', '')
 
@@ -61,6 +92,18 @@ def docx_to_html(src, dest, logger):
     with open(dest, 'w') as f:
         f.write(markup)
 
-    logger.info("Done tidy html file [%s]", dest)
-
     return dest
+
+
+def docx_to_text(src):
+    ret = []
+    with open(src, 'rb') as f:
+        document = Document(f)
+        first = True
+        for p in document.paragraphs:
+            if not first:
+                ret.append('\n')
+            ret.append(p.text)
+            if first:
+                first = False
+    return ''.join(ret)

@@ -2,6 +2,7 @@ FROM    python:3.6-alpine3.8
 
 RUN apk --no-cache add \
     build-base \
+    linux-headers \
     openssl \
     wget \
     tidyhtml-dev \
@@ -27,8 +28,19 @@ RUN \
     pip install -r requirements.txt && \
     mkdir logs
 
+ENV     UWSGI_CHDIR=archive-unzip
+ENV     UWSGI_WSGI_FILE=wsgi.py
+ENV     UWSGI_CALLABLE=app
+ENV     UWSGI_HTTP_SOCKET=0.0.0.0:5000
+ENV     UWSGI_VACUUM=true
+ENV     UWSGI_MASTER=true
+ENV     UWSGI_PROCESSES=3
+ENV     UWSGI_THREADS=2
+ENV     UWSGI_DIE_ON_TERM=true
+
 ENV     SOFFICE_BIN=/usr/bin/soffice
 ENV     FFMPEG_BIN=/usr/local/bin/ffmpeg
-ENV     FLASK_APP=archive-unzip/autoapp.py
+ENV     LINKER_URL=https://cdn.kabbalahmedia.info/
+
 EXPOSE  5000
-CMD     ["flask", "run", "--host=0.0.0.0"]
+CMD     ["uwsgi"]

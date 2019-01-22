@@ -1,7 +1,7 @@
-assets/
-
-.idea/
-**/*.iml
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
 bin/
 include/
@@ -10,5 +10,9 @@ lib64
 pyvenv.cfg
 pip-selfcheck.json
 
+.idea/
+**/*.iml
+
+assets/
 logs/
 app.ini
