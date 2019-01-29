@@ -3,6 +3,8 @@ FROM    python:3.6-alpine3.8
 RUN apk --no-cache add \
     build-base \
     linux-headers \
+    libxml2-dev \
+    libxslt-dev \
     openssl \
     wget \
     tidyhtml-dev \
@@ -25,7 +27,7 @@ COPY --from=mwader/static-ffmpeg:4.0.3 /ffprobe /usr/local/bin/
 RUN \
     git clone https://github.com/Bnei-Baruch/archive-unzip && \
     cd archive-unzip && \
-    pip install -r requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt && \
     mkdir logs
 
 ENV     UWSGI_CHDIR=archive-unzip
