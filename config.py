@@ -12,7 +12,7 @@ class Config(object):
     MDB_POOL_SIZE = int(os.environ.get('MDB_POOL_SIZE', '2'))
 
     # Warning: symlinks don't work, see https://superuser.com/a/1089693
-    SOFFICE_BIN = os.environ.get('SOFFICE_BIN', '/Applications/LibreOffice.app/Contents/MacOS/soffice')
+    SOFFICE_BIN = os.environ.get('SOFFICE_BIN', '/usr/bin/soffice')
 
     FFMPEG_BIN = os.environ.get('FFMPEG_BIN', '/usr/bin/ffmpeg')
 

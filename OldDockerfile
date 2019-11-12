@@ -5,6 +5,7 @@ LABEL   maintainer="edoshor@gmail.com"
 RUN apk --no-cache add \
     build-base \
     fontconfig \
+    git \
     libreoffice \
     libxml2-dev \
     libxslt-dev \
@@ -20,20 +21,18 @@ RUN apk --no-cache add \
 
 RUN \
     wget https://github.com/jgm/pandoc/releases/download/2.1.3/pandoc-2.1.3-linux.tar.gz && \
-    tar xvzf pandoc-2.1.3-linux.tar.gz --strip-components 1 -C /usr/local/ && \
-    rm -f pandoc-2.1.3-linux.tar.gz && \
-    apk del wget
+    tar xvzf pandoc-2.1.3-linux.tar.gz --strip-components 1 -C /usr/local/
 
 COPY --from=mwader/static-ffmpeg:4.0.3 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:4.0.3 /ffprobe /usr/local/bin/
 
-WORKDIR /app
-COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN \
+    git clone https://github.com/Bnei-Baruch/archive-unzip && \
+    cd archive-unzip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    mkdir logs
 
-VOLUME /assets
-
-ENV     UWSGI_CHDIR=/app
+ENV     UWSGI_CHDIR=archive-unzip
 ENV     UWSGI_WSGI_FILE=wsgi.py
 ENV     UWSGI_CALLABLE=app
 ENV     UWSGI_HTTP_SOCKET=0.0.0.0:5000
@@ -43,8 +42,7 @@ ENV     UWSGI_PROCESSES=3
 ENV     UWSGI_THREADS=2
 ENV     UWSGI_DIE_ON_TERM=true
 
-#ENV     SOFFICE_BIN=/usr/bin/soffice
-ENV     BASE_DIR=/assets
+ENV     SOFFICE_BIN=/usr/bin/soffice
 ENV     FFMPEG_BIN=/usr/local/bin/ffmpeg
 ENV     LINKER_URL=https://cdn.kabbalahmedia.info/
 

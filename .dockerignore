@@ -1,0 +1,23 @@
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# git
+.git
+.gitattributes
+.gitignore
+
+# JetBrains
+.idea
+
+# python
+bin/
+include/
+lib/
+lib64/
+
+# App
+assets
