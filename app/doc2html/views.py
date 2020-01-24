@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import tempfile
 from urllib import request
 from collections import namedtuple
@@ -170,7 +171,7 @@ def process_docx_uid(uids):
                 get_and_create_dir(uids[idx])
             for src, dest in moves:
                 try:
-                    os.rename(src, dest)
+                    shutil.move(src, dest)
                 except Exception as e:
                     current_app.logger.debug(
                         'Directory: %s' % os.listdir(os.path.dirname(src)))
