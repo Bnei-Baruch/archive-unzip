@@ -14,6 +14,8 @@ RUN apk --no-cache add \
     openssl \
     postgresql-dev \
     tidyhtml-dev \
+    pcre \
+    pcre-dev \
     wget && \
     update-ms-fonts && \
     fc-cache -f
@@ -29,19 +31,26 @@ COPY --from=mwader/static-ffmpeg:4.0.3 /ffprobe /usr/local/bin/
 
 WORKDIR /app
 COPY . .
+COPY ./misc/wait-for /wait-for
 RUN pip install --no-cache-dir -r requirements.txt
+
+#RUN addgroup -S deploy && adduser -H -S deploy -G deploy -u 1088 && \
+#    chown -R deploy:deploy /app
 
 VOLUME /assets
 
-ENV     UWSGI_CHDIR=/app
 ENV     UWSGI_WSGI_FILE=wsgi.py
 ENV     UWSGI_CALLABLE=app
-ENV     UWSGI_HTTP_SOCKET=0.0.0.0:5000
+ENV     UWSGI_SOCKET=0.0.0.0:5000
 ENV     UWSGI_VACUUM=true
 ENV     UWSGI_MASTER=true
-ENV     UWSGI_PROCESSES=3
-ENV     UWSGI_THREADS=2
+ENV     UWSGI_PROCESSES=2
+ENV     UWSGI_THREADS=4
 ENV     UWSGI_DIE_ON_TERM=true
+ENV     UWSGI_HTTP_AUTO_CHUNKED=true
+ENV     UWSGI_HTTP_KEEPALIVE=true
+ENV     UWSGI_LAZY_APPS=false
+ENV     UWSGI_WSGI_ENV_BEHAVIOR=holy
 
 #ENV     SOFFICE_BIN=/usr/bin/soffice
 ENV     BASE_DIR=/assets
@@ -49,4 +58,7 @@ ENV     FFMPEG_BIN=/usr/local/bin/ffmpeg
 ENV     LINKER_URL=https://cdn.kabbalahmedia.info/
 
 EXPOSE  5000
-CMD     ["uwsgi"]
+
+#USER deploy:deploy
+
+CMD ["uwsgi", "--show-config"]
