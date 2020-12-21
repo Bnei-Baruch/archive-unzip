@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, jsonify
 
-from app import unzip, doc2html, thumbnail, health
+from app import unzip, doc2html, thumbnail, health, preview
 from . import mdb, sendfile
 
 CONFIG_NAME_MAPPER = {
@@ -30,6 +30,7 @@ def create_app(env_name='dev', **kwargs):
     app.register_blueprint(health.views.blueprint)
     app.register_blueprint(unzip.views.blueprint)
     app.register_blueprint(doc2html.views.htmlBlueprint)
+    app.register_blueprint(preview.views.htmlBlueprint)
     app.register_blueprint(doc2html.views.docxBlueprint)
     app.register_blueprint(doc2html.views.textBlueprint)
     app.register_blueprint(doc2html.views.prepareBlueprint)
