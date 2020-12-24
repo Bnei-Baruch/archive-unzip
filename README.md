@@ -1,3 +1,13 @@
+## Dev Env Setup
+For first time, this one is enough. It takes some time as we have large dependencies and we load MDB dump.
+```shell
+docker-compose up -d
+```
+
+In PyCharm, we have to create a remote interpreter of type docker-compose for service 'app'.
+
+For debugging, use a 'Flask' run configuration and don't forget to set `--host=0.0.0.0` in "Additional options"
+
 ## Docker installation
 Build the image with:
 ```shell
