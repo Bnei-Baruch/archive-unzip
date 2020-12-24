@@ -1,0 +1,24 @@
+version: "3.7"
+services:
+  mdb:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile.dev.db
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+  app:
+    build: ./
+    restart: always
+    depends_on:
+      - mdb
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/app
+    environment:
+      FLASK_ENV: development
+      MDB_URL: "postgres://postgres:password@mdb/mdb?sslmode=disable"
+    command: [ "flask", "run", "--host=0.0.0.0" ]
+

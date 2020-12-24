@@ -6,13 +6,13 @@ from app import unzip, doc2html, thumbnail, health
 from . import mdb, sendfile
 
 CONFIG_NAME_MAPPER = {
-    'dev': 'config.DevConfig',
+    'development': 'config.DevConfig',
     'test': 'config.TestConfig',
     'production': 'config.ProductionConfig',
 }
 
 
-def create_app(env_name='dev', **kwargs):
+def create_app(env_name='development', **kwargs):
     config_name = env_name if env_name else os.environ.get('FLASK_ENV')
     assert config_name in CONFIG_NAME_MAPPER, "Unknown environment name: {}".format(config_name)
 

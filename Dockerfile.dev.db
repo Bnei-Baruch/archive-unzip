@@ -1,0 +1,5 @@
+FROM    postgres:9-alpine
+
+LABEL   maintainer="edoshor@gmail.com"
+
+ADD ./misc/fetch_and_load_mdb_dump.sh /docker-entrypoint-initdb.d
