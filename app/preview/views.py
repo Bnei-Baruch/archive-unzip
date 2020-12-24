@@ -26,7 +26,10 @@ def doc_2_html_from_bLob():
 
 
 def send_html(docx_path, dir):
-    path = process_html_path(docx_path)
+    try:
+        path = process_html_path(docx_path)
+    except RuntimeError as ex:
+        return make_response(ex, 400)
     test_file(path)
     if os.path.isabs(path):
         resp = send_file(path, as_attachment=True, cache_timeout=0)
