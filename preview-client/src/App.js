@@ -11,9 +11,14 @@ function App() {
     setError(null);
     const body = new FormData();
     body.append('doc', doc);
-    const url     = 'http://localhost:5000/doc2htmlByBLob';
+
+    const url = `${process.env.REACT_APP_BACKEND}doc2htmlByBLob`;
+
     const options = {
-      method: 'POST', body
+      method: 'POST',
+      referrerPolicy: 'no-referrer-when-downgrade',
+      mode: 'cors',
+      body
     };
     fetch(url, options)
       .then(r => {
