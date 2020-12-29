@@ -16,6 +16,7 @@ def doc_2_html_from_bLob():
     file = request.files.get('doc')
     resp = build_response(file)
     resp.headers.add("Access-Control-Allow-Origin", "*")
+    resp.headers.add("Access-Control-Expose-Headers", "Content-Length")
     return resp
 
 
@@ -34,7 +35,7 @@ def send_html(docx_path):
         path = process_html_path(docx_path)
     except RuntimeError as ex:
         return make_response(ex, 400)
-    return send_file(path)
+    return current_app.sendfile.send_file(path)
 
 
 def save_to_docx(docx, dir):
