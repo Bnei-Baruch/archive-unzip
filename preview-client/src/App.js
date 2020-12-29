@@ -17,7 +17,7 @@ function App() {
     const options = {
       method: 'POST',
       referrerPolicy: 'no-referrer-when-downgrade',
-      mode: 'cors',
+      //referrer: '',
       body
     };
     fetch(url, options)
