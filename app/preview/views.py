@@ -1,12 +1,10 @@
 import os
 import tempfile
-import time
 
-from flask import Blueprint, current_app, send_file, request
+from flask import Blueprint, request, jsonify
 
 from flask.helpers import make_response, send_from_directory
 from app.doc2html.views import process_html_path
-from app.sendfile import Sendfile
 
 htmlByBLobBlueprint = Blueprint('doc2htmlByBLob', __name__)
 
@@ -16,7 +14,6 @@ def doc_2_html_from_bLob():
     file = request.files.get('doc')
     resp = build_response(file)
     resp.headers.add("Access-Control-Allow-Origin", "*")
-    resp.headers.add("Access-Control-Expose-Headers", "Content-Length")
     return resp
 
 
@@ -35,7 +32,12 @@ def send_html(docx_path):
         path = process_html_path(docx_path)
     except RuntimeError as ex:
         return make_response(ex, 400)
-    return current_app.sendfile.send_file(path)
+    return make_response(html_to_json(path), 200)
+
+
+def html_to_json(path):
+    html = open(path, 'r').read()
+    return jsonify({'html': html})
 
 
 def save_to_docx(docx, dir):
