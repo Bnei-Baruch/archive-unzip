@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import {
   FormControl,
-  InputAdornment,
   IconButton,
   Container,
   Box,
   FormHelperText,
-  InputLabel,
   Input,
   Paper,
-  Button, ButtonBase, TextField, ButtonGroup, Grid, Typography, CircularProgress,
+  Button,
+  Grid,
+  Typography,
+  CircularProgress,
 } from '@material-ui/core';
 import { FormatTextdirectionLToR, FormatTextdirectionRToL, Publish } from '@material-ui/icons';
 
@@ -29,7 +30,7 @@ const Layout  = ({ html, upload, error, wip }) => {
 
   const renderUpload = () => (
     <Grid container spacing={6} alignContent="center" alignItems="center">
-      <Grid item xs={9}>
+      <Grid item xs={8}>
         <FormControl variant="outlined" fullWidth>
           <Input
             id="doc"
@@ -39,15 +40,18 @@ const Layout  = ({ html, upload, error, wip }) => {
             onChange={handleChangeDoc}
           />
           <FormHelperText id="forUploadFile">
-            <Typography color={error ? 'error' : 'primary'}>
+            <Typography color={error ? 'error' : 'primary'} component="span">
               {error ? error : doc}
             </Typography>
           </FormHelperText>
 
         </FormControl>
       </Grid>
-      <Grid xs={3}>
-        <IconButton onClick={() => setDir(dir === dirEnum.ltr ? dirEnum.rtl : dirEnum.ltr)}>
+      <Grid item xs={4}>
+        <IconButton
+          onClick={() => setDir(dir === dirEnum.ltr ? dirEnum.rtl : dirEnum.ltr)}
+          style={{ 'marginRight': '1em' }}
+        >
           {
             dir === dirEnum.ltr
               ? <FormatTextdirectionRToL />
