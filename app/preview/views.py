@@ -21,8 +21,6 @@ def build_response(file):
     if file is None:
         return make_response("You must send file", 400)
     with tempfile.TemporaryDirectory() as dir_path:
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
         docx_path = save_to_docx(file, dir_path)
         return send_html(docx_path)
 
@@ -30,8 +28,8 @@ def build_response(file):
 def send_html(docx_path):
     try:
         path = process_html_path(docx_path)
-    except RuntimeError as ex:
-        return make_response(ex, 400)
+    except IOError as ex:
+        return make_response(ex, 500)
     return make_response(html_to_json(path), 200)
 
 
