@@ -19,3 +19,4 @@ app.ini
 /preview-client/.env
 /preview-client/build/
 /preview-client/node_modules/
+/preview-client/.eslintcache
