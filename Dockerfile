@@ -39,6 +39,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 VOLUME /assets
 
+ENV     FLASK_ENV=production
 ENV     UWSGI_WSGI_FILE=wsgi.py
 ENV     UWSGI_CALLABLE=app
 ENV     UWSGI_SOCKET=0.0.0.0:5000

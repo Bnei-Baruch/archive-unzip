@@ -1,7 +1,10 @@
+import os
+
 from app.app import create_app
+
 # from werkzeug.debug import DebuggedApplication
 
-app = create_app('production')
+app = create_app(os.environ.get('FLASK_ENV', 'production'))
 
 # Set DEBUG True and uncomment rows below to see logger.info/debug/error
 # in standard output of wsgi application.

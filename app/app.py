@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, jsonify
+from flask_cors import CORS
 
 from app import unzip, doc2html, thumbnail, health, preview
 from . import mdb, sendfile
@@ -12,15 +13,14 @@ CONFIG_NAME_MAPPER = {
 }
 
 
-def create_app(env_name='development', **kwargs):
-    config_name = env_name if env_name else os.environ.get('FLASK_ENV')
-    assert config_name in CONFIG_NAME_MAPPER, "Unknown environment name: {}".format(config_name)
+def create_app(env, **kwargs):
+    assert env in CONFIG_NAME_MAPPER, "Unknown environment name: {}".format(env)
 
     # create app
     app = Flask(__name__, **kwargs)
 
     # load config
-    app.config.from_object(CONFIG_NAME_MAPPER[config_name])
+    app.config.from_object(CONFIG_NAME_MAPPER[env])
 
     # init extensions
     mdb.MDB(app, app.config['MDB_POOL_SIZE'])
@@ -44,5 +44,10 @@ def create_app(env_name='development', **kwargs):
         return resp
 
     app.errorhandler(Exception)(errorhandler)
+
+    # enable CORS on lower environments.
+    # in production nginx does that in front of us
+    if env != "production":
+        CORS(app)
 
     return app

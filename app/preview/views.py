@@ -5,13 +5,12 @@ from flask import Blueprint, request, jsonify
 
 from flask.helpers import make_response, send_from_directory
 from app.doc2html.views import process_html_path
-from flask_cors import CORS
 
 htmlByBLobBlueprint = Blueprint('doc2htmlByBLob', __name__)
 
-CORS(htmlByBLobBlueprint)
+
 @htmlByBLobBlueprint.route("/doc2htmlByBLob", methods=["POST"])
-def doc_2_html_from_bLob():
+def doc_2_html_from_blob():
     file = request.files.get('doc')
     return build_response(file)
 
