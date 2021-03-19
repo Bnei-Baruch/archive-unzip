@@ -3,7 +3,7 @@ pytidylib
 click==6.7
 Flask==1.1.1
 itsdangerous==0.24
-Jinja2==2.11.1
+Jinja2==2.11.3
 MarkupSafe==1.0
 Werkzeug==1.0.0
 requests
