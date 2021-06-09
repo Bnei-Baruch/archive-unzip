@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from app import unzip, doc2html, thumbnail, health, preview
+from app import unzip, doc2html, thumbnail, health, preview, countwords
 from . import mdb, sendfile
 
 CONFIG_NAME_MAPPER = {
@@ -34,6 +34,7 @@ def create_app(env, **kwargs):
     app.register_blueprint(doc2html.views.docxBlueprint)
     app.register_blueprint(doc2html.views.textBlueprint)
     app.register_blueprint(doc2html.views.prepareBlueprint)
+    app.register_blueprint(countwords.views.countwordsBlueprint)
     app.register_blueprint(thumbnail.views.blueprint)
 
     # register error handlers
