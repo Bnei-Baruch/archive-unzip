@@ -8,6 +8,8 @@ from flask import Blueprint, request, current_app
 from flask.helpers import make_response
 from flask.json import jsonify
 
+from app.doc2html.views import MODULE_DIR
+
 countwordsBlueprint = Blueprint('countwords', __name__)
 
 
@@ -17,16 +19,17 @@ def countwords():
     if f_uid is None:
         return make_response("You must send files", 400)
     result = []
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        doc = current_app.fetchfile.fetch_file(f_uid, tmp_dir)
-        for p in doc.paragraphs:
-            w_map = countWords(p)
-            if len(w_map) == 0:
-                continue
-            result.append(w_map)
+    doc = docx.Document(current_app.fetchfile.fetch_doc(f_uid, get_dir))
+    for p in doc.paragraphs:
+        w_map = countWords(p)
+        if len(w_map) == 0:
+            continue
+        result.append(w_map)
 
     return make_response(jsonify(result), 200)
 
+def get_dir(uid):
+    return current_app.fetchfile.get_dir(uid, MODULE_DIR)
 
 def countWords(paragraph):
     t = re.sub('<,()"".*?>', '', paragraph.text)
