@@ -72,7 +72,7 @@ const Layout  = ({ html, upload, error, wip }) => {
 
   const renderPreview = () => (
     <div>
-      <div className="search-on-page--container">
+      <div className="search-on-page--container eng_styles">
         <div
           style={{ direction: dir, textAlign: (dir === dirEnum.ltr ? 'left' : 'right'), padding: '1em' }}
           dangerouslySetInnerHTML={{ __html: html }}
