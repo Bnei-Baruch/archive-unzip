@@ -9163,9 +9163,9 @@ klona@^2.0.4:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.5.tgz#d166574d90076395d9963aa7a928fabb8d76afbc"
   integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
-"kmedia-mdb@https://github.com/Bnei-Baruch/kmedia-mdb.git#AR-918":
+"kmedia-mdb@https://github.com/Bnei-Baruch/kmedia-mdb.git":
   version "0.1.0"
-  resolved "https://github.com/Bnei-Baruch/kmedia-mdb.git#4f42db17793f63076eaaf76530f3b0b0e69180d2"
+  resolved "https://github.com/Bnei-Baruch/kmedia-mdb.git#169ef8a9fdd0a7da741a125d6ee64a5d9f8ad976"
   dependencies:
     "@babel/cli" "^7.11.6"
     "@babel/core" "^7.11.6"
