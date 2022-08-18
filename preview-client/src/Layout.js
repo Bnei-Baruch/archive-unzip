@@ -76,14 +76,16 @@ const Layout = ({html, upload, error, wip}) => {
                     Upload file
                     <Publish/>
                 </Button>
-                <Select
-                    id="langs-select"
-                    value={lang}
-                    label="Language"
-                    onChange={handleChangeLang}
-                >
-                    {ALL_LANGUAGES.map(l => <MenuItem value={l}>l</MenuItem>)}
-                </Select>
+                <FormControl variant="standard" sx={{m: 1}}>
+                    <Select
+                        id="langs-select"
+                        value={lang}
+                        label="Language"
+                        onChange={handleChangeLang}
+                    >
+                        {ALL_LANGUAGES.map(l => <MenuItem value={l}>{l}</MenuItem>)}
+                    </Select>
+                </FormControl>
             </Grid>
         </Grid>
     );
