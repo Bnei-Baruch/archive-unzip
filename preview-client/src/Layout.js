@@ -58,25 +58,29 @@ const Layout = ({html, upload, error, wip}) => {
                 </FormControl>
             </Grid>
             <Grid item xs={5}>
-                <IconButton
-                    onClick={() => setDir(dir === dirEnum.ltr ? dirEnum.rtl : dirEnum.ltr)}
-                    style={{'marginRight': '1em'}}
-                >
-                    {
-                        dir === dirEnum.ltr
-                            ? <FormatTextdirectionRToL/>
-                            : <FormatTextdirectionLToR/>
-                    }
-                </IconButton>
-                <Button
-                    onClick={handleUpload}
-                    variant="contained"
-                    disabled={!file}
-                >
-                    Upload file
-                    <Publish/>
-                </Button>
-                <FormControl variant="standard" sx={{m: 1}}>
+                <FormControl variant="standard">
+                    <IconButton
+                        onClick={() => setDir(dir === dirEnum.ltr ? dirEnum.rtl : dirEnum.ltr)}
+                        style={{'marginRight': '1em'}}
+                    >
+                        {
+                            dir === dirEnum.ltr
+                                ? <FormatTextdirectionRToL/>
+                                : <FormatTextdirectionLToR/>
+                        }
+                    </IconButton>
+                </FormControl>
+                <FormControl variant="standard">
+                    <Button
+                        onClick={handleUpload}
+                        variant="contained"
+                        disabled={!file}
+                    >
+                        Upload file
+                        <Publish/>
+                    </Button>
+                </FormControl>
+                <FormControl variant="standard">
                     <Select
                         id="langs-select"
                         value={lang}
