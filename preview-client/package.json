@@ -6,7 +6,7 @@
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^13.3.0",
-    "kmedia-mdb": "https://github.com/Bnei-Baruch/kmedia-mdb.git",
+    "kmedia-mdb": "https://github.com/Bnei-Baruch/kmedia-mdb.git#master",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.3",
