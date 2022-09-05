@@ -7855,7 +7855,7 @@ klona@^2.0.4:
 
 "kmedia-mdb@https://github.com/Bnei-Baruch/kmedia-mdb.git":
   version "0.1.0"
-  resolved "https://github.com/Bnei-Baruch/kmedia-mdb.git#a45a96cc6e3d2655befce5cde0444d0bed5e4b4f"
+  resolved "https://github.com/Bnei-Baruch/kmedia-mdb.git#24764fdf221566198efbce2d2b4594af9e036fc4"
   dependencies:
     "@babel/cli" "^7.11.6"
     "@babel/core" "^7.11.6"
