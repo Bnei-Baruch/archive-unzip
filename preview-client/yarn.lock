@@ -7853,7 +7853,7 @@ klona@^2.0.4:
   resolved "https://registry.npmjs.org/klona/-/klona-2.0.5.tgz"
   integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
-"kmedia-mdb@https://github.com/Bnei-Baruch/kmedia-mdb.git":
+"kmedia-mdb@https://github.com/Bnei-Baruch/kmedia-mdb.git#24764fdf221566198efbce2d2b4594af9e036fc4":
   version "0.1.0"
   resolved "https://github.com/Bnei-Baruch/kmedia-mdb.git#24764fdf221566198efbce2d2b4594af9e036fc4"
   dependencies:
