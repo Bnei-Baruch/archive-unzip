@@ -126,15 +126,5 @@ def is_have_continue(f1, f2):
     cross_b = cross_img.getcolors()[0][0]
     has_continue = not (img1_black - img2_black > MIN_SAME_IMG_COEFFICIENT and img1_black / img2_black > 3) and \
                    (abs(min_b - cross_b) / min_b < MIN_SAME_IMG_COEFFICIENT)
-    save_for_debug(has_continue, img1, img2, cross_img, f1)
     return has_continue
 
-
-def save_for_debug(skip, img1, img2, cross_img, f1):
-    if skip:
-        return
-    num = f1.split(".")[0].split("_")[-1]
-    Path("/assets/unzip/diff").mkdir(parents=True, exist_ok=True)
-    img1.save("/assets/unzip/diff/{num}.jpg".format(num=num))
-    img2.save("/assets/unzip/diff/{num}_next.jpg".format(num=num))
-    cross_img.save("/assets/unzip/diff/{num}_cross.jpg".format(num=num))
