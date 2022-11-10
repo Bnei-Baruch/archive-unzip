@@ -115,7 +115,7 @@ def mark_main_img(files):
 # if not check amount of crossed active pixels
 def is_have_continue(f1, f2):
     if f1 is None or f2 is None:
-        return False
+        return True
     fn = lambda x: 255 if x > 200 else 0
     img1 = Image.open(f1).convert('L').point(fn, mode='1').convert('1').filter(ImageFilter.MedianFilter(3))
     img2 = Image.open(f2).convert('L').point(fn, mode='1').convert('1').filter(ImageFilter.MedianFilter(3))
