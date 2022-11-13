@@ -1,10 +1,8 @@
 import io
 import json
 import os
-import shutil
 from urllib import request
 from zipfile import ZipFile
-from pathlib import Path
 from PIL import Image, ImageChops, ImageStat, ImageEnhance, ImageColor, ImageFilter
 
 from flask import Blueprint, current_app, request as requestFlask, jsonify
@@ -66,7 +64,7 @@ def process_uid(uid, mast_uniq=False):
     index_uniq_file = os.path.join(uid_dir, INDEX_UNIQ_JSON)
 
     # file already exist ?
-    if os.path.exists(index_file) and (mast_uniq and os.path.exists(index_uniq_file)):
+    if os.path.exists(index_file) and (not mast_uniq or os.path.exists(index_uniq_file)):
         return index_file, index_uniq_file
     # unzip url to directory
     # TODO: handle http errors and map them to relevant errors to our users
@@ -127,4 +125,3 @@ def is_have_continue(f1, f2):
     has_continue = not (img1_black - img2_black > MIN_SAME_IMG_COEFFICIENT and img1_black / img2_black > 3) and \
                    (abs(min_b - cross_b) / min_b < MIN_SAME_IMG_COEFFICIENT)
     return has_continue
-
