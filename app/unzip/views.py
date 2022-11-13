@@ -32,7 +32,7 @@ def unzip_uids():
     list = []
     for uid in uids:
         try:
-            path, uniq_path = process_uid(uid)
+            path, uniq_path = process_uid(uid, True)
         # if can't find by this uid - skip
         except Exception as e:
             current_app.logger.debug('Try fetch and build json for file uid %s. Error %s', uid, e)
@@ -47,9 +47,9 @@ def unzip_uids():
 
 @blueprint.route('/unzip_uniq/<uid>')
 def unzip_uniq(uid):
-    _, file_path = process_uid(uid)
+    _, file_path = process_uid(uid, True)
     if file_path:
-        return current_app.sendfile.send_file(file_path, True)
+        return current_app.sendfile.send_file(file_path)
     else:
         return make_response("missing info", 404)
 
