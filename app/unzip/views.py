@@ -47,9 +47,9 @@ def unzip_uids():
 
 @blueprint.route('/unzip_uniq/<uid>')
 def unzip_uniq(uid):
-    _, file_path = process_uid(uid)
+    _, file_path = process_uid(uid, True)
     if file_path:
-        return current_app.sendfile.send_file(file_path, True)
+        return current_app.sendfile.send_file(file_path)
     else:
         return make_response("missing info", 404)
 
