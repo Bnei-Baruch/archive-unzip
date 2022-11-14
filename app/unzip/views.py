@@ -68,15 +68,16 @@ def process_uid(uid, mast_uniq=False):
         return index_file, index_uniq_file
     # unzip url to directory
     # TODO: handle http errors and map them to relevant errors to our users
-    url = current_app.config['LINKER_URL'] + uid
-    try:
-        conn = request.urlopen(url)
-    except Exception as e:
-        raise e
-    zipstream = io.BytesIO(conn.read())
-    with ZipFile(zipstream) as zipfile:
-        for info in zipfile.infolist():
-            zipfile.extract(info, path=uid_dir)
+    if not os.path.exists(index_file):
+        url = current_app.config['LINKER_URL'] + uid
+        try:
+            conn = request.urlopen(url)
+        except Exception as e:
+            raise e
+        zipstream = io.BytesIO(conn.read())
+        with ZipFile(zipstream) as zipfile:
+            for info in zipfile.infolist():
+                zipfile.extract(info, path=uid_dir)
 
     # list files in directory
     files = []
