@@ -128,6 +128,7 @@ def is_have_continue(f1, f2):
     cross_b = cross_img.getcolors()[0][0]
     has_continue = not (img1_black - img2_black > MIN_SAME_IMG_COEFFICIENT and img1_black / img2_black > 3) and \
                    (abs(min_b - cross_b) / min_b < MIN_SAME_IMG_COEFFICIENT)
+    #save_for_debug(False, img1, img2, cross_img, f1)
     return has_continue
 
 
