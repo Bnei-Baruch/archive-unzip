@@ -1,6 +1,7 @@
 import io
 import json
 import os
+from pathlib import Path
 from urllib import request
 from zipfile import ZipFile
 from PIL import Image, ImageChops, ImageStat, ImageEnhance, ImageColor, ImageFilter
@@ -118,6 +119,8 @@ def is_have_continue(f1, f2):
     fn = lambda x: 255 if x > 200 else 0
     img1 = Image.open(f1).convert('L').point(fn, mode='1').convert('1').filter(ImageFilter.MedianFilter(3))
     img2 = Image.open(f2).convert('L').point(fn, mode='1').convert('1').filter(ImageFilter.MedianFilter(3))
+    img1 = crop_border(img1)
+    img2 = crop_border(img2)
     cross_img = ImageChops.add(img1, img2)
     img1_black = img1.getcolors()[0][0]
     img2_black = img2.getcolors()[0][0]
@@ -126,3 +129,23 @@ def is_have_continue(f1, f2):
     has_continue = not (img1_black - img2_black > MIN_SAME_IMG_COEFFICIENT and img1_black / img2_black > 3) and \
                    (abs(min_b - cross_b) / min_b < MIN_SAME_IMG_COEFFICIENT)
     return has_continue
+
+
+def crop_border(img):
+    w, h = img.size
+    bbox = img.getbbox()
+    if not bbox == (0, 0, w, h):
+        return img.crop(bbox)
+    return img
+
+
+def save_for_debug(skip, img1, img2, cross_img, f1):
+    if skip:
+        return
+    diff_img = ImageChops.difference(img1, img2)
+    num = f1.split(".")[0].split("_")[-1]
+    Path("/assets/unzip/diff").mkdir(parents=True, exist_ok=True)
+    img1.save("/assets/unzip/diff/{num}.jpg".format(num=num))
+    img2.save("/assets/unzip/diff/{num}_next.jpg".format(num=num))
+    cross_img.save("/assets/unzip/diff/{num}_cross.jpg".format(num=num))
+    diff_img.save("/assets/unzip/diff/{num}_diff.jpg".format(num=num))
