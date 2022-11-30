@@ -45,16 +45,6 @@ def unzip_uids():
         list.append({'full': full, 'uniq': uniq, 'uid': uid})
     return jsonify(list)
 
-
-@blueprint.route('/unzip_uniq/<uid>')
-def unzip_uniq(uid):
-    _, file_path = process_uid(uid, True)
-    if file_path:
-        return current_app.sendfile.send_file(file_path)
-    else:
-        return make_response("missing info", 404)
-
-
 def process_uid(uid, mast_uniq=False):
     base_dir = current_app.config['BASE_DIR']
     output_dir = os.path.join(base_dir, MODULE_DIR)
