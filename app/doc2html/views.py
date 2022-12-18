@@ -82,7 +82,7 @@ def get_dir(uid):
 
 
 def get_and_create_dir(uid):
-    uid_dir = get_dir(uid)
+    uid_dir = current_app.fetchfile.get_dir(uid, MODULE_DIR)
     os.makedirs(uid_dir, exist_ok=True)
     return uid_dir
 

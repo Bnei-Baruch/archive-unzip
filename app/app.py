@@ -3,8 +3,8 @@ import os
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from app import unzip, doc2html, thumbnail, health, preview
-from . import mdb, sendfile
+from app import unzip, doc2html, thumbnail, health, preview, countwords
+from . import mdb, sendfile, fetchfile
 
 CONFIG_NAME_MAPPER = {
     'development': 'config.DevConfig',
@@ -25,6 +25,7 @@ def create_app(env, **kwargs):
     # init extensions
     mdb.MDB(app, app.config['MDB_POOL_SIZE'])
     sendfile.Sendfile(app)
+    fetchfile.Fetchfile(app)
 
     # register blueprints
     app.register_blueprint(health.views.blueprint)
@@ -34,6 +35,7 @@ def create_app(env, **kwargs):
     app.register_blueprint(doc2html.views.docxBlueprint)
     app.register_blueprint(doc2html.views.textBlueprint)
     app.register_blueprint(doc2html.views.prepareBlueprint)
+    app.register_blueprint(countwords.views.countwordsBlueprint)
     app.register_blueprint(thumbnail.views.blueprint)
 
     # register error handlers
