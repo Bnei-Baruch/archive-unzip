@@ -32,6 +32,8 @@ COPY --from=mwader/static-ffmpeg:4.0.3 /ffprobe /usr/local/bin/
 WORKDIR /app
 COPY . .
 COPY ./misc/wait-for /wait-for
+
+RUN apk add jpeg-dev zlib-dev libjpeg
 RUN pip install --no-cache-dir -r requirements.txt
 
 #RUN addgroup -S deploy && adduser -H -S deploy -G deploy -u 1088 && \
