@@ -12,3 +12,4 @@ python-docx
 uWSGI
 flask-cors
 Pillow
+pysrt
