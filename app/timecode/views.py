@@ -1,10 +1,12 @@
 import os
 import re
 import difflib
+import tempfile
+import urllib
 
 import pysrt
 
-from flask import Blueprint, current_app, jsonify
+from flask import Blueprint, current_app
 from flask.helpers import make_response
 
 from app.doc2html.conversionFunctions import docx_to_text
@@ -15,6 +17,14 @@ blueprint = Blueprint('time_code', __name__)
 time_by_word = {}
 pos_by_word = {}
 duration = 0
+
+srt_q = """
+SELECT f.uid from files f 
+INNER JOIN content_units cu ON cu.id = f.content_unit_id
+WHERE cu.uid = %s 
+AND f.properties->>'insert_type' = 'subtitles'
+AND f.language = 'he'
+"""
 
 
 @blueprint.route('/time_code/<uid>')
@@ -49,7 +59,7 @@ def calculate_resp(from_subs, from_doc):
             t_start, t_end = find_start_end_by_idxs(i1, i2)
         if tag == 'equal' or tag == 'replace':
             for (pos, time) in approximate_doc_time(j1, j2, t_start, t_end):
-                resp[pos] = time
+                resp[pos] = RespItem(time, pos)
         elif tag == 'insert':
             p2_tag = diff[i - 2][0]
             p_tag, p_i1, p_i2, p_j1, p_j2 = diff[i - 1]
@@ -65,9 +75,14 @@ def calculate_resp(from_subs, from_doc):
                 else:
                     t_end, _ = time_by_word[n_i1]
             for (pos, time) in approximate_doc_time(j1, j2, t_start, t_end):
-                resp[pos] = time
+                resp[pos] = RespItem(time, pos)
         i += 1
     return resp
+
+
+class RespItem(dict):
+    def __init__(self, t, idx):
+        dict.__init__(self, timeCode=t, index=idx)
 
 
 def approximate_doc_time(i1, i2, s_time, e_time):
@@ -150,7 +165,19 @@ def save_pos_by_word(text):
 
 # SUBS
 def prepare_subs(uid):
-    subs = pysrt.open(os.path.join('/srt', uid, 'str.vtt'))
+    with current_app.mdb.get_cursor() as cur:
+        q = srt_q % uid
+        cur.execute(q)
+        f_uid = cur.fetchone()
+    url = current_app.config['LINKER_URL'] + f_uid
+    try:
+        srt = urllib.request.urlopen(url).read()
+    except Exception as e:
+        current_app.logger.exception("error on load srt %s" % e)
+        return []
+    with tempfile.TemporaryFile() as tmp:
+        srt.save(tmp)
+    subs = pysrt.open(tmp)
     offset = 0
     t_list = []
     for sub in subs:
