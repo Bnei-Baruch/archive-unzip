@@ -53,7 +53,7 @@ class Fetchfile(object):
             return row
 
     def get_dir(self, uid, module):
-        base_dir = self.config['BASE_DIR']
+        base_dir = self.app.config['BASE_DIR']
         output_dir = os.path.join(base_dir, module)
         # Directory example: output_dir/U3/U3d812xj
         uid_dir = os.path.join(output_dir, uid[:2], uid)
