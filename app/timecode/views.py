@@ -3,25 +3,26 @@ import re
 import difflib
 import tempfile
 import urllib
-
-import pysrt
+import time
 
 from flask import Blueprint, current_app
 from flask.helpers import make_response
+import webvtt
 
 from app.doc2html.conversionFunctions import docx_to_text
 from app.doc2html.views import process_docx_uid
 
 blueprint = Blueprint('time_code', __name__)
 
+FIX_DERIVE_ZERO = 1 ** -10
 time_by_word = {}
 pos_by_word = {}
 duration = 0
 
-srt_q = """
+vtt_q = """
 SELECT f.uid from files f 
 INNER JOIN content_units cu ON cu.id = f.content_unit_id
-WHERE cu.uid = %s 
+WHERE cu.uid = '%s' 
 AND f.properties->>'insert_type' = 'subtitles'
 AND f.language = 'he'
 """
@@ -32,12 +33,14 @@ def timecode(uid):
     global duration
     duration = 0
     from_subs = prepare_subs(uid)
+    if from_subs is None:
+        return []
     from_doc = prepare_transcription(uid)
     resp = {}
     try:
         resp = calculate_resp(from_subs, from_doc)
-    except:
-        current_app.logger.error('Calculate times for unit %s.' % uid)
+    except Exception as e:
+        current_app.logger.error('Calculate times for unit %s. Exception %s' % (uid, e))
     return resp
 
 
@@ -87,12 +90,12 @@ class RespItem(dict):
 
 def approximate_doc_time(i1, i2, s_time, e_time):
     if i2 == len(pos_by_word):
-        i2 = i1;
+        i2 = i1
 
     s_pos = pos_by_word[i1][0]
     e_pos = pos_by_word[i2][1]
 
-    coef = (e_time - s_time) / (e_pos - s_pos)
+    coef = (e_time - s_time) / (e_pos - s_pos + FIX_DERIVE_ZERO)
 
     resp = []
     t_offset = s_time
@@ -166,18 +169,14 @@ def save_pos_by_word(text):
 # SUBS
 def prepare_subs(uid):
     with current_app.mdb.get_cursor() as cur:
-        q = srt_q % uid
+        q = vtt_q % uid
         cur.execute(q)
         f_uid = cur.fetchone()
-    url = current_app.config['LINKER_URL'] + f_uid
-    try:
-        srt = urllib.request.urlopen(url).read()
-    except Exception as e:
-        current_app.logger.exception("error on load srt %s" % e)
-        return []
-    with tempfile.TemporaryFile() as tmp:
-        srt.save(tmp)
-    subs = pysrt.open(tmp)
+        if f_uid is None:
+            return None
+    url = current_app.config['LINKER_URL'] + f_uid['uid']
+    tmp, headers = urllib.request.urlretrieve(url)
+    subs = webvtt.read(tmp)
     offset = 0
     t_list = []
     for sub in subs:
@@ -188,8 +187,8 @@ def prepare_subs(uid):
 
 def approximate_sub_time(sub, w_offset):
     t = clear_str(sub.text)
-    s = sub.start.ordinal
-    e = sub.end.ordinal
+    s = str_2_mls(sub.start)
+    e = str_2_mls(sub.end)
     coef = (e - s) / len(t)
 
     t_offset = s
@@ -221,3 +220,14 @@ def debug_diff_results(from_subs, from_doc, as_html):
         d = difflib.HtmlDiff()
         table = d.make_table(from_subs, from_doc)
         return table
+
+
+def str_2_mls(st):
+    _l = st.split('.')
+    mls = int(_l[1])
+    t = _l[0].split(':')
+    i = len(t) - 1
+    for s in t:
+        mls += int(s) * max(i * 60, 1) * 1000
+        i -= 1
+    return mls
