@@ -172,8 +172,8 @@ def prepare_subs(uid):
         q = vtt_q % uid
         cur.execute(q)
         f_uid = cur.fetchone()
-        if f_uid is None:
-            return None
+    if f_uid is None:
+        return None
     url = current_app.config['LINKER_URL'] + f_uid['uid']
     tmp, headers = urllib.request.urlretrieve(url)
     subs = webvtt.read(tmp)
