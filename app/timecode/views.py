@@ -34,7 +34,7 @@ def timecode(uid):
     duration = 0
     from_subs = prepare_subs(uid)
     if from_subs is None:
-        return []
+        return {}
     from_doc = prepare_transcription(uid)
     resp = {}
     try:
