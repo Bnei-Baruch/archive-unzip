@@ -4,6 +4,7 @@ import difflib
 import tempfile
 import urllib
 import time
+from pprint import pprint
 
 from flask import Blueprint, current_app, request
 from flask.helpers import make_response
@@ -62,7 +63,7 @@ def text_by_file(f_uid):
     if not docx_path or code != 200:
         return make_response('Failed preparing uid: [%s].' % docx_path, code)
     text = docx_to_text(docx_path)
-    return clear_str(text)
+    return clear_str(text).split(" ")
 
 
 class TimecodeToDoc:
@@ -70,8 +71,8 @@ class TimecodeToDoc:
         self.resp = {}
         self.cu_uid = cu_uid
         self.lang = lang
-        self.time_by_word = {}
-        self.pos_by_word = {}
+        self.time_by_word_sub = {}
+        self.time_by_word_doc = {}
         self.duration = 0
 
     def run(self):
@@ -87,42 +88,44 @@ class TimecodeToDoc:
         return resp
 
     def approximate_doc_time(self, i1, i2, s_time, e_time):
-        if i2 == len(self.pos_by_word):
-            i2 = i1
+        try:
+            if i2 == len(self.time_by_word_doc):
+                i2 = i1
+            w_len = i2 - i1
+            coef = (e_time - s_time) / (w_len + FIX_DERIVE_ZERO)
 
-        s_pos = self.pos_by_word[i1][0]
-        e_pos = self.pos_by_word[i2][1]
-
-        coef = (e_time - s_time) / (e_pos - s_pos + FIX_DERIVE_ZERO)
-
-        resp = []
-        t_offset = s_time
-        while i1 <= i2:
-            (s_pos, e_pos) = self.pos_by_word[i1]
-            resp.append((s_pos, round(t_offset / 1000, 1)))
-            t_offset = t_offset + (e_pos - s_pos + 1) * coef
-            i1 += 1
-        return resp
+            resp = []
+            t_offset = s_time
+            w_count = 0
+            while w_count < w_len:
+                resp.append((i1 + w_count, round(t_offset / 1000, 1)))
+                w_count += 1
+                t_offset = t_offset + w_count * coef
+            return resp
+        except Exception as e:
+            current_app.logger.error(e)
 
     def find_start_end_by_idxs(self, i1, i2):
-        if i2 == len(self.time_by_word):
-            i2 = i1
-        if i2 not in self.time_by_word:
-            i1 = i1 - 1
-            i2 = i2 - 1
-        start = self.time_by_word[i1][0]
-        end = self.time_by_word[i2][1]
-        return start, end
+        try:
+            if i2 == len(self.time_by_word_sub):
+                i2 = i1
+            if i2 not in self.time_by_word_sub:
+                i1 = i1 - 1
+                i2 = i2 - 1
+            start = self.time_by_word_sub[i1]
+            end = self.time_by_word_sub[i2 + 1]
+            return start, end
+        except Exception as e:
+            current_app.logger.error(e)
 
     # TRANSCRIPTIONS
     def prepare_transcription(self):
         try:
             fuid = self.file_by_cu()
             text = text_by_file(fuid)
-            resp = self.save_pos_by_word(text)
         except Exception as e:
             return make_response(e, 500)
-        return resp
+        return text
 
     def file_by_cu(self):
         q = file_q % (self.cu_uid, self.lang)
@@ -137,16 +140,6 @@ class TimecodeToDoc:
                 if d['type'] == "video" and self.duration == 0:
                     self.duration = d['properties']['duration']
             return uid
-
-    def save_pos_by_word(self, text):
-        arr = text.split(' ')
-        offset = 0
-        i = 0
-        for w in arr:
-            self.pos_by_word[i] = (offset, offset + len(w))
-            offset = offset + len(w) + 1
-            i += 1
-        return arr
 
     # SUBS
     def prepare_subs(self):
@@ -170,19 +163,19 @@ class TimecodeToDoc:
         t = clear_str(sub.text)
         s = sub.start_in_seconds * 1000
         e = sub.end_in_seconds * 1000
-        coef = (e - s) / len(t)
+        t_list = t.split(" ")
+        coef = (e - s) / len(t_list)
 
         t_offset = s
-        t_list = t.split(" ")
+        w_count = 0
         for w in t_list:
-            t_offset_end = t_offset + (len(w) + 1) * coef
-            self.time_by_word[w_offset] = (t_offset, t_offset_end)
-            w_offset += 1
-            t_offset = t_offset_end
-        return w_offset, t_list
+            t_offset = t_offset + w_count * coef
+            self.time_by_word_sub[w_offset + w_count] = t_offset
+            w_count += 1
+        return w_offset + w_count, t_list
 
     def calculate_resp(self, from_subs, from_doc):
-        d = difflib.SequenceMatcher(lambda x: x in " \t")
+        d = difflib.SequenceMatcher(lambda x: x in " ")
         d.set_seqs(from_subs, from_doc)
         diff = d.get_opcodes()
         resp = {}
@@ -191,30 +184,42 @@ class TimecodeToDoc:
         while i < l:
             _last = i == (l - 1)
             (tag, i1, i2, j1, j2) = diff[i]
-            if _last:
-                t_start = self.time_by_word[i2 - 1][1]
-                t_end = self.duration
-            else:
-                t_start, t_end = self.find_start_end_by_idxs(i1, i2)
+            try:
+                if _last:
+                    t_start = self.time_by_word_sub[i1 - 1]
+                    t_end = self.duration
+                else:
+                    t_start, t_end = self.find_start_end_by_idxs(i1, i2)
+            except Exception as e:
+                current_app.logger.error(e)
             if tag == 'equal' or tag == 'replace':
-                for (pos, time) in self.approximate_doc_time(j1, j2, t_start, t_end):
-                    resp[pos] = RespItem(time, pos)
-            elif tag == 'insert':
-                p2_tag = diff[i - 2][0]
-                p_tag, p_i1, p_i2, p_j1, p_j2 = diff[i - 1]
-                if p_tag == 'delete':
-                    if not p2_tag == "insert":
-                        t_start, _ = self.time_by_word[p_i1]
-                    else:
-                        _, t_start = self.time_by_word[p_i2]
-                if not _last:
-                    n_tag, n_i1, n_i2, n_j1, n_j2 = diff[i + 1]
-                    if n_tag == 'delete':
-                        _, t_end = self.time_by_word[n_i2]
-                    else:
-                        t_end, _ = self.time_by_word[n_i1]
                 for (pos, t) in self.approximate_doc_time(j1, j2, t_start, t_end):
                     resp[pos] = RespItem(t, pos)
+            # for insert we can pake time or from prev delete or from next delete if have
+            elif tag == 'insert':
+                try:
+                    p_tag, p_i1, p_i2, p_j1, p_j2 = diff[i - 1]
+                    n_tag, n_i1, n_i2, n_j1, n_j2 = diff[i + 1]
+                    if p_tag == 'delete':
+                        t_start = self.time_by_word_sub[p_i1]
+                        t_end = self.time_by_word_sub[i2]
+                    elif n_tag == 'delete':
+                        if i + 2 < l and diff[i + 2][0] == "insert":
+                            i += 1
+                            continue
+                        t_start = self.time_by_word_sub[i1]
+                        t_end = self.time_by_word_sub[n_i2]
+                    elif i1 == i2:
+                        t_start = self.time_by_word_sub[p_i2]
+                        t_end = self.time_by_word_sub[i2]
+                    else:
+                        t_start = self.time_by_word_sub[i1]
+                        t_end = self.time_by_word_sub[i2]
+
+                    for (pos, t) in self.approximate_doc_time(j1, j2, t_start, t_end):
+                        resp[pos] = RespItem(t, pos)
+                except Exception as e:
+                    current_app.logger.error('Calculate response for iteration num %s. Exception %s' % (i, e))
             i += 1
         return resp
 

@@ -142,7 +142,8 @@ def process_docx_uid(uids):
                 # TODO: Handle http errors and map them to relevant errors.
                 try:
                     request.urlretrieve(url, path)
-                except:
+                except Exception as e:
+                    current_app.logger.error('Cant fetch file %s from CDN. Exception %s' % (uid, e))
                     ret[idx] = 'Failed urlretrieve for %s' % url
                     codes[idx] = 404
                     doc_to_docx_list[idx] = None
