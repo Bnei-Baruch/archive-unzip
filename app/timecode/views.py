@@ -15,7 +15,7 @@ from app.doc2html.views import process_docx_uid
 
 blueprint = Blueprint('time_code', __name__)
 
-FIX_DERIVE_ZERO = 1 ** -10
+FIX_DERIVE_ZERO = 10 ** -5
 
 vtt_q = """
 SELECT f.uid from files f 
@@ -40,22 +40,6 @@ def timecode():
         return {}
     p = TimecodeToDoc(cu_uid, lang)
     return p.run()
-
-
-#
-# def timecode(uid):
-#     global duration
-#     duration = 0
-#     from_subs = prepare_subs(uid)
-#     if from_subs is None:
-#         return {}
-#     from_doc = prepare_transcription(uid)
-#     resp = {}
-#     try:
-#         resp = calculate_resp(from_subs, from_doc)
-#     except Exception as e:
-#         current_app.logger.error('Calculate times for unit %s. Exception %s' % (uid, e))
-#     return resp
 
 
 def text_by_file(f_uid):
@@ -86,24 +70,6 @@ class TimecodeToDoc:
         except Exception as e:
             current_app.logger.error('Calculate times for unit %s. Exception %s' % (self.cu_uid, e))
         return resp
-
-    def approximate_doc_time(self, i1, i2, s_time, e_time):
-        try:
-            if i2 == len(self.time_by_word_doc):
-                i2 = i1
-            w_len = i2 - i1
-            coef = (e_time - s_time) / (w_len + FIX_DERIVE_ZERO)
-
-            resp = []
-            t_offset = s_time
-            w_count = 0
-            while w_count < w_len:
-                resp.append((i1 + w_count, round(t_offset / 1000, 1)))
-                w_count += 1
-                t_offset = t_offset + w_count * coef
-            return resp
-        except Exception as e:
-            current_app.logger.error(e)
 
     def find_start_end_by_idxs(self, i1, i2):
         try:
@@ -166,11 +132,9 @@ class TimecodeToDoc:
         t_list = t.split(" ")
         coef = (e - s) / len(t_list)
 
-        t_offset = s
         w_count = 0
         for w in t_list:
-            t_offset = t_offset + w_count * coef
-            self.time_by_word_sub[w_offset + w_count] = t_offset
+            self.time_by_word_sub[w_offset + w_count] = s + w_count * coef
             w_count += 1
         return w_offset + w_count, t_list
 
@@ -193,7 +157,7 @@ class TimecodeToDoc:
             except Exception as e:
                 current_app.logger.error(e)
             if tag == 'equal' or tag == 'replace':
-                for (pos, t) in self.approximate_doc_time(j1, j2, t_start, t_end):
+                for (pos, t) in approximate_doc_time(j1, j2, t_start, t_end):
                     resp[pos] = RespItem(t, pos)
             # for insert we can pake time or from prev delete or from next delete if have
             elif tag == 'insert':
@@ -216,7 +180,7 @@ class TimecodeToDoc:
                         t_start = self.time_by_word_sub[i1]
                         t_end = self.time_by_word_sub[i2]
 
-                    for (pos, t) in self.approximate_doc_time(j1, j2, t_start, t_end):
+                    for (pos, t) in approximate_doc_time(j1, j2, t_start, t_end):
                         resp[pos] = RespItem(t, pos)
                 except Exception as e:
                     current_app.logger.error('Calculate response for iteration num %s. Exception %s' % (i, e))
@@ -227,6 +191,22 @@ class TimecodeToDoc:
 class RespItem(dict):
     def __init__(self, t, idx):
         dict.__init__(self, timeCode=t, index=idx)
+
+
+def approximate_doc_time(j1, j2, s_time, e_time):
+    try:
+        w_len = j2 - j1
+        coef = 0 if w_len == 0 else (e_time - s_time) / w_len
+
+        resp = []
+        t_offset = s_time
+        w_count = 0
+        while w_count < w_len:
+            resp.append((j1 + w_count, round((t_offset + w_count * coef) / 1000, 1)))
+            w_count += 1
+        return resp
+    except Exception as e:
+        current_app.logger.error(e)
 
 
 # must be synchronized with client side clean text cause we use letter position for find timestamp
