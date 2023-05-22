@@ -1,10 +1,6 @@
-import os
 import re
 import difflib
-import tempfile
 import urllib
-import time
-from pprint import pprint
 
 from flask import Blueprint, current_app, request
 from flask.helpers import make_response
@@ -13,9 +9,9 @@ import webvtt
 from app.doc2html.conversionFunctions import docx_to_text
 from app.doc2html.views import process_docx_uid
 
+# endpoint of mapping of timecode for CU transcription from .vtt file
+# by language and CU uid
 blueprint = Blueprint('time_code', __name__)
-
-FIX_DERIVE_ZERO = 10 ** -5
 
 vtt_q = """
 SELECT f.uid from files f 
@@ -210,7 +206,11 @@ def approximate_doc_time(j1, j2, s_time, e_time):
 
 
 # must be synchronized with client side clean text cause we use letter position for find timestamp
+# function findOffsetOfDOMNode
+# https://github.com/Bnei-Baruch/kmedia-mdb/blob/263c76a7d7c790d1f4863f75a5aee97f820e04c4/src/helpers/scrollToSearch/helper.js#L243
+pattern = re.compile(r'[".,\/#!$%\^&\*;:{}=\-_`~()\[\]‘’”“]')
+
+
 def clear_str(text):
-    pattern = re.compile(r'[".,\/#!$%\^&\*;:{}=\-_`~()\[\]‘’”“]')
     text = re.sub(pattern, '', text)
     return re.sub(r'\W+', ' ', text)
