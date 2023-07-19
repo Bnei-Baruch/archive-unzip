@@ -73,7 +73,7 @@ def process_uid(uid, mast_uniq=False):
     # list files in directory
     files = []
     for file in sorted(os.listdir(uid_dir)):
-        if not file.startswith(".") and not file.endswith('.json'):
+        if not file.startswith(".") and not file.endswith('.json') and not file == '__MACOSX':
             path = os.path.join(uid_dir, file)
             files.append({'path': path, 'size': os.path.getsize(path)})
     full, uniq = mark_main_img(files)
