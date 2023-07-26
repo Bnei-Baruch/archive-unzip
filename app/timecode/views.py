@@ -97,7 +97,7 @@ class TimecodeToDoc:
             for d in rows:
                 if not d:
                     continue
-                if d['type'] == "text":
+                if d['type'] == "text" and not d['properties'].get('insert_type', 'none') == 'summary':
                     uid = d['uid']
                 if d['type'] == "video" and self.duration == 0:
                     self.duration = d['properties']['duration']
