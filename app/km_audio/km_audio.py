@@ -17,8 +17,7 @@ FIND_KITVEIMAKOR_AOUDIO_LINKS_SQL = """
         AND f.language = '%s'
         AND f.type = 'audio'
         AND f.published = TRUE
-        AND f.secure = 0
-        ORDER BY ;
+        AND f.secure = 0;
 """
 LIKUTIM_ORIGINALS_BY_DATE_SQL = """
     SELECT lesson_cu.properties->>'film_date' as film_date, km_cu.id as km_id, km_cu.properties->>'duration' as km_d
@@ -110,15 +109,16 @@ class KmAudio:
             return link
 
     def merge_audio(self, tmp_dir):
-        ffmpeg_bin = current_app.config['FFMPEG_BIN']
-        files = []
-        for uid in self.order:
-            p = join(tmp_dir, "%s.mp3" % uid)
-            if not isfile(p):
-                continue
-            files.append("-i")
-            files.append(p)
-        ret_code = call([ffmpeg_bin, *files, "-c", "copy", self.path])
+        f_list = join(tmp_dir, "files.txt")
+        with open(f_list, 'w') as f:
+            for uid in self.order:
+                p = join(tmp_dir, "%s.mp3" % uid)
+                if not isfile(p):
+                    continue
+                f.write("file '%s'" % p)
+                f.write('\n')
+        args = ["-f", "concat", "-safe", "0", "-i", f_list, "-c", "copy"]
+        ret_code = call([current_app.config['FFMPEG_BIN'], *args, self.path])
         self.is_ok = ret_code == 0
 
     def cp_audio(self, tmp_dir):
