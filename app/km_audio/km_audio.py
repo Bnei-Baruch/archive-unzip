@@ -60,7 +60,7 @@ class KmAudio:
 
     def run(self):
         os.makedirs(self.dir, exist_ok=True)
-        if os.path.isfile(self.path) and not self.need_update():
+        if os.path.isfile(self.path):  # and not self.need_update():
             return self.path
         with TemporaryDirectory() as tmp_dir:
             links = self.find_audios()
