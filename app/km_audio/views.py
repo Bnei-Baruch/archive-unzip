@@ -1,6 +1,7 @@
 import http
+import os
 
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from flask.helpers import make_response, send_file
 
 from app.km_audio.km_audio import KmAudio
@@ -21,6 +22,7 @@ def km_audio_build(uid):
 def km_audio_file(uid):
     km = KmAudio(uid, request.args.get('language'))
     if km.run():
+        current_app.logger.error(os.stat(km.path))
         return send_file(km.path, mimetype="audio/mpeg", conditional=True)
     else:
         return make_response("missing info", 404)

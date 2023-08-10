@@ -52,7 +52,7 @@ def fetch_audios(links, tmp_dir):
 class KmAudio:
     def __init__(self, uid, lang):
         self.is_ok = False
-        self.dir = "%s/kitvei_makor/" % current_app.config['BASE_DIR']
+        self.dir = "%s/kitei_makor/" % current_app.config['BASE_DIR']
         self.path = os.path.join(self.dir, "%s_%s.mp3" % (uid, lang))
         self.uid = uid
         self.lang = lang
@@ -110,7 +110,7 @@ class KmAudio:
 
     def merge_audio(self, tmp_dir):
         f_list = join(tmp_dir, "files.txt")
-        with open(f_list, 'w') as f:
+        with open(f_list, 'w+') as f:
             for uid in self.order:
                 p = join(tmp_dir, "%s.mp3" % uid)
                 if not isfile(p):
