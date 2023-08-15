@@ -89,7 +89,8 @@ class KmAudio:
             for i, r in enumerate(rows):
                 dt = datetime.strptime(r["film_date"], "%Y-%m-%d")
                 cu_ids.append(r["km_id"])
-                duration += int(r["km_d"])
+                if "kmd_d" in r:
+                    duration += int(r["km_d"])
                 if dt - timedelta(days=10) < prev_dt or i == len(rows) - 1:
                     prev_dt = dt
                     x = {
