@@ -21,11 +21,11 @@ AND f.properties->>'insert_type' = 'subtitles'
 AND f.language = '%s'
 """
 file_q = """
-        select f.* from files f
-        INNER JOIN content_units cu ON cu.id = f.content_unit_id
-        WHERE cu.uid = '%s'
-        AND f.language = '%s'
-        """
+SELECT f.* FROM files f
+INNER JOIN content_units cu ON cu.id = f.content_unit_id
+WHERE cu.uid = '%s'
+AND f.language = '%s'
+"""
 
 
 @blueprint.route('/time_code')
