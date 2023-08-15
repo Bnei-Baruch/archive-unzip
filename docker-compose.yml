@@ -20,5 +20,5 @@ services:
     environment:
       FLASK_ENV: development
       MDB_URL: "postgres://postgres:password@mdb/mdb?sslmode=disable"
-    command: [ "flask", "--debug", "run", "--host=0.0.0.0" ]
+    command: [ "flask","run", "--host=0.0.0.0" ]
 
