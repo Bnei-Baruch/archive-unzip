@@ -22,8 +22,6 @@ def km_audio_build(uid):
 def km_audio_file(uid):
     km = KmAudio(uid, request.args.get('language'))
     if km.run():
-        # current_app.logger.error(os.stat(km.path))
-        # return send_file(km.path, mimetype="audio/mpeg", conditional=True)
         return current_app.sendfile.send_file(km.path)
     else:
         return make_response("missing info", 404)
