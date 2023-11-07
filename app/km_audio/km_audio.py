@@ -62,7 +62,6 @@ class KmAudio:
         os.makedirs(self.dir, exist_ok=True)
         if os.path.isfile(self.path) and not self.need_update():
             return self.path
-        os.remove(self.path)
         with TemporaryDirectory() as tmp_dir:
             links = self.find_audios()
             fetch_audios(links, tmp_dir)
@@ -78,6 +77,8 @@ class KmAudio:
             t = cur.fetchone()
             stat = os.stat(self.path)
             resp = t['date'] > datetime.fromtimestamp(stat.st_mtime).date()
+            if resp:
+                os.remove(self.path)
             return resp
 
     def find_audios(self):
