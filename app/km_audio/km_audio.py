@@ -75,7 +75,7 @@ class KmAudio:
         with current_app.mdb.get_cursor() as cur:
             cur.execute(CHECK_IS_LAST_SQL % (self.uid, self.lang))
             t = cur.fetchone()
-            resp = t['date'] > (datetime.now() - timedelta(days=1)).date()
+            resp = t['date'] > datetime.fromtimestamp(os.path.getmtime(self.path)).date()
             return resp
 
     def find_audios(self):
