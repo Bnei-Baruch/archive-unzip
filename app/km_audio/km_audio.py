@@ -33,11 +33,14 @@ LIKUTIM_ORIGINALS_BY_DATE_SQL = """
         ORDER BY (lesson_cu.properties->>'film_date')::date;
 """
 CHECK_IS_LAST_SQL = """
-    SELECT (cu.properties->>'film_date')::date FROM files f 
-        INNER JOIN content_units cu ON f.content_unit_id = cu.id
-        WHERE cu.uid = '%s'
-        AND f.language = '%s'
-        ORDER BY (cu.properties->>'film_date')::date DESC
+    SELECT (lesson_cu.properties->>'film_date')::date
+        FROM content_units likut_cu
+        INNER JOIN content_unit_derivations lesson_cud ON  lesson_cud.derived_id = likut_cu.id
+        INNER JOIN content_units lesson_cu ON lesson_cu.id = lesson_cud.source_id
+        WHERE likut_cu.uid = '%s'
+        AND lesson_cu.published = TRUE
+        AND lesson_cu.secure = 0
+        ORDER BY (lesson_cu.properties->>'film_date')::date DESC;
 """
 
 
@@ -61,7 +64,7 @@ class KmAudio:
     def run(self):
         os.makedirs(self.dir, exist_ok=True)
         if os.path.isfile(self.path):
-            if self.need_update(current_app.logger):
+            if self.need_update():
                 os.remove(self.path)
             else:
                 return self.path
@@ -74,21 +77,12 @@ class KmAudio:
                 self.cp_audio(tmp_dir)
         return self.is_ok
 
-    def need_update(self, logger):
+    def need_update(self):
         with current_app.mdb.get_cursor() as cur:
-            cur.execute(CHECK_IS_LAST_SQL % (self.uid, self.lang))
+            cur.execute(CHECK_IS_LAST_SQL % self.uid)
             t = cur.fetchone()
             stat = os.stat(self.path)
             resp = t['date'] > datetime.fromtimestamp(stat.st_mtime).date()
-
-            logger.error(f'need_update: uid {self.uid}')
-            logger.error(f'need_update: from DB {t["date"]}')
-            logger.error(f'need_update: stat.st_atime {datetime.fromtimestamp(stat.st_atime).date()}')
-            logger.error(f'need_update: stat.st_mtime {datetime.fromtimestamp(stat.st_mtime).date()}')
-            logger.error(f'need_update: stat.st_ctime {datetime.fromtimestamp(stat.st_ctime).date()}')
-            logger.error(f'need_update: getctime {datetime.fromtimestamp(os.path.getctime(self.path)).date()}')
-            logger.error(f'need_update: getatime {datetime.fromtimestamp(os.path.getatime(self.path)).date()}')
-            logger.error(f'need_update: getmtime {datetime.fromtimestamp(os.path.getmtime(self.path)).date()}')
             return resp
 
     def find_audios(self):
