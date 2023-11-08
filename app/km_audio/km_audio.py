@@ -60,8 +60,11 @@ class KmAudio:
 
     def run(self):
         os.makedirs(self.dir, exist_ok=True)
-        if os.path.isfile(self.path) and not self.need_update():
-            return self.path
+        if os.path.isfile(self.path):
+            if self.need_update(current_app.logger):
+                os.remove(self.path)
+            else:
+                return self.path
         with TemporaryDirectory() as tmp_dir:
             links = self.find_audios()
             fetch_audios(links, tmp_dir)
@@ -71,14 +74,21 @@ class KmAudio:
                 self.cp_audio(tmp_dir)
         return self.is_ok
 
-    def need_update(self):
+    def need_update(self, logger):
         with current_app.mdb.get_cursor() as cur:
             cur.execute(CHECK_IS_LAST_SQL % (self.uid, self.lang))
             t = cur.fetchone()
             stat = os.stat(self.path)
             resp = t['date'] > datetime.fromtimestamp(stat.st_mtime).date()
-            if resp:
-                os.remove(self.path)
+
+            logger.debug(f'need_update: uid {self.uid}')
+            logger.debug(f'need_update: from DB {t["date"]}')
+            logger.debug(f'need_update: stat.st_atime {datetime.fromtimestamp(stat.st_atime).date()}')
+            logger.debug(f'need_update: stat.st_mtime {datetime.fromtimestamp(stat.st_mtime).date()}')
+            logger.debug(f'need_update: stat.st_ctime {datetime.fromtimestamp(stat.st_ctime).date()}')
+            logger.debug(f'need_update: getctime {datetime.fromtimestamp(os.path.getctime(self.path)).date()}')
+            logger.debug(f'need_update: getatime {datetime.fromtimestamp(os.path.getatime(self.path)).date()}')
+            logger.debug(f'need_update: getmtime {datetime.fromtimestamp(os.path.getmtime(self.path)).date()}')
             return resp
 
     def find_audios(self):
