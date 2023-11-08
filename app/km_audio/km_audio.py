@@ -81,14 +81,14 @@ class KmAudio:
             stat = os.stat(self.path)
             resp = t['date'] > datetime.fromtimestamp(stat.st_mtime).date()
 
-            logger.debug(f'need_update: uid {self.uid}')
-            logger.debug(f'need_update: from DB {t["date"]}')
-            logger.debug(f'need_update: stat.st_atime {datetime.fromtimestamp(stat.st_atime).date()}')
-            logger.debug(f'need_update: stat.st_mtime {datetime.fromtimestamp(stat.st_mtime).date()}')
-            logger.debug(f'need_update: stat.st_ctime {datetime.fromtimestamp(stat.st_ctime).date()}')
-            logger.debug(f'need_update: getctime {datetime.fromtimestamp(os.path.getctime(self.path)).date()}')
-            logger.debug(f'need_update: getatime {datetime.fromtimestamp(os.path.getatime(self.path)).date()}')
-            logger.debug(f'need_update: getmtime {datetime.fromtimestamp(os.path.getmtime(self.path)).date()}')
+            logger.error(f'need_update: uid {self.uid}')
+            logger.error(f'need_update: from DB {t["date"]}')
+            logger.error(f'need_update: stat.st_atime {datetime.fromtimestamp(stat.st_atime).date()}')
+            logger.error(f'need_update: stat.st_mtime {datetime.fromtimestamp(stat.st_mtime).date()}')
+            logger.error(f'need_update: stat.st_ctime {datetime.fromtimestamp(stat.st_ctime).date()}')
+            logger.error(f'need_update: getctime {datetime.fromtimestamp(os.path.getctime(self.path)).date()}')
+            logger.error(f'need_update: getatime {datetime.fromtimestamp(os.path.getatime(self.path)).date()}')
+            logger.error(f'need_update: getmtime {datetime.fromtimestamp(os.path.getmtime(self.path)).date()}')
             return resp
 
     def find_audios(self):
