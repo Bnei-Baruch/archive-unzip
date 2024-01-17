@@ -19,12 +19,16 @@ INNER JOIN content_units cu ON cu.id = f.content_unit_id
 WHERE cu.uid = '%s' 
 AND f.properties->>'insert_type' = 'subtitles'
 AND f.language = '%s'
+AND f.published = TRUE
+AND f.secure = 0
 """
 file_q = """
 SELECT f.* FROM files f
 INNER JOIN content_units cu ON cu.id = f.content_unit_id
 WHERE cu.uid = '%s'
 AND f.language = '%s'
+AND f.published = TRUE
+AND f.secure = 0
 """
 
 
