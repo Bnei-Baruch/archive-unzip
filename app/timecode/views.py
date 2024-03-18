@@ -79,7 +79,7 @@ class TimecodeToDoc:
                 i1 = i1 - 1
                 i2 = i2 - 1
             start = self.time_by_word_sub[i1]
-            end = self.time_by_word_sub[i2 + 1]
+            end = self.time_by_word_sub[i2]
             return start, end
         except Exception as e:
             current_app.logger.error(e)
@@ -151,7 +151,7 @@ class TimecodeToDoc:
             try:
                 if _last:
                     t_start = self.time_by_word_sub[i1 - 1]
-                    t_end = self.duration
+                    t_end = self.duration * 1000
                 else:
                     t_start, t_end = self.find_start_end_by_idxs(i1, i2)
             except Exception as e:
