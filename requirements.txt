@@ -8,7 +8,7 @@ MarkupSafe==1.0
 Werkzeug==1.0.0
 requests==2.27.1
 psycopg2==2.9.8
-python-docx==0.8.11
+python-docx==0.8.10
 uWSGI==2.0.23
 flask-cors==4.0.0
 Pillow==8.4.0
