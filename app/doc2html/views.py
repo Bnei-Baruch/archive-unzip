@@ -55,7 +55,7 @@ def doc2html(uid):
     return current_app.sendfile.send_file(html_path)
 
 
-@htmlBlueprint.route('/<uid>/media/media/<img>')
+@htmlBlueprint.route('/<uid>/media/<img>')
 def html_imgs(uid, img):
     if not is_single_uid(uid):
         return make_response('Expected single uid, got [%s].' % uid, 400)
