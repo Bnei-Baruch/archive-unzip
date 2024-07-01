@@ -55,6 +55,19 @@ def doc2html(uid):
     return current_app.sendfile.send_file(html_path)
 
 
+@htmlBlueprint.route('/<uid>/<img>')
+def doc2html(uid, img):
+    if not is_single_uid(uid):
+        return make_response('Expected single uid, got [%s].' % uid, 400)
+    if img is None:
+        return make_response('Expected image name, got [%s].' % img, 400)
+    img_path = find_html_media(uid, img)
+    if img_path is None:
+        return make_response("img not found", 404)
+
+    return current_app.sendfile.send_file(img_path)
+
+
 @docxBlueprint.route('/<uid>')
 def doc2docx(uid):
     if not is_single_uid(uid):
@@ -103,9 +116,9 @@ def process_docx_uid(uids):
         # Store here pairs of src and dest to move later.
         move_list = [[] for _ in range(len(uids))]
         # List of required conversions from doc to docx.
-        doc_to_docx_list = [None]*len(uids)
-        ret = [None]*len(uids)
-        codes = [200]*len(uids)
+        doc_to_docx_list = [None] * len(uids)
+        ret = [None] * len(uids)
+        codes = [200] * len(uids)
 
         # Download files to one directory (we need this for docx conversion).
         # Then convert them in this one directory and copy to their own
@@ -152,7 +165,7 @@ def process_docx_uid(uids):
                     move_list[idx].append(Move(path, dest_path))
 
         # Convert doc to docx if necessary.
-        docx_list = [None]*len(uids)
+        docx_list = [None] * len(uids)
         if any([doc is not None for doc in doc_to_docx_list]):
             soffice_bin = current_app.config['SOFFICE_BIN']
             docx_list, code, error = doc_to_docx(
@@ -191,7 +204,7 @@ def process_html_path(docx_path):
 
 def get_file_types(uids):
     reverse_index = dict([(uid, idx) for idx, uid in enumerate(uids)])
-    file_types = [None]*len(uids)
+    file_types = [None] * len(uids)
     with current_app.mdb.get_cursor() as cur:
         sql = ('select uid, name, type '
                'from files where uid in (%s)' %
@@ -203,3 +216,10 @@ def get_file_types(uids):
                 continue
             file_types[reverse_index[d['uid']]] = d['name'].split('.')[-1]
     return file_types
+
+
+def find_html_media(uid, img):
+    img_path = os.path.join(get_dir(uid), "media/media", img)
+    if not os.path.exists(img_path):
+        return None
+    return img_path
