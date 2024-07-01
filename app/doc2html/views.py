@@ -219,7 +219,7 @@ def get_file_types(uids):
 
 
 def find_html_media(uid, img):
-    img_path = os.path.join(get_dir(uid), "media/media", img)
+    img_path = os.path.join(get_dir(uid), "media", img)
     if not os.path.exists(img_path):
         return None
     return img_path
