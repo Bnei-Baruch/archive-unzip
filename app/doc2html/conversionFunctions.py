@@ -80,7 +80,7 @@ def doc_to_docx(folder, files, soffice_bin, logger):
 def docx_to_html(src, dest, logger):
     if not os.path.exists(src):
         raise IOError('File not found: [%s]' % src)
-    pypandoc.convert_file(src, to='html5', extra_args=['-s', '--extract-media=./media'], outputfile=dest)
+    pypandoc.convert_file(src, to='html5', extra_args=['-s', '--extract-media=.'], outputfile=dest)
 
     with open(dest, 'r') as f:
         html = f.read().replace('\n', '')
