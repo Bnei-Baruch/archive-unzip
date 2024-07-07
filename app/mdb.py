@@ -17,8 +17,6 @@ class MDB(object):
 
     def init_app(self, app):
         url = urlparse(app.config['MDB_URL'])
-        #url = urlparse("postgres://mdb:g!7vJx-QHz@pgsql2.mdb.local/mdb?sslmode=disable&user=mdb&password=g!7vJx-QHz")
-        # url = urlparse("postgres://pgsql2.mdb.local/mdb?sslmode=disable&user=readonly&password=g!7vJx-QHz")
         self._pool = psycopg2.pool.ThreadedConnectionPool(0, self.pool_size,
                                                           database=url.path[1:],
                                                           user=url.username,
