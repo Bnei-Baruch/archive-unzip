@@ -55,19 +55,6 @@ def doc2html(uid):
     return current_app.sendfile.send_file(html_path)
 
 
-@htmlBlueprint.route('/<uid>/media/<img>')
-def html_imgs(uid, img):
-    if not is_single_uid(uid):
-        return make_response('Expected single uid, got [%s].' % uid, 400)
-    if img is None:
-        return make_response('Expected image name, got [%s].' % img, 400)
-    img_path = find_html_media(uid, img)
-    if img_path is None:
-        return make_response("img not found", 404)
-
-    return current_app.sendfile.send_file(img_path)
-
-
 @docxBlueprint.route('/<uid>')
 def doc2docx(uid):
     if not is_single_uid(uid):
@@ -216,10 +203,3 @@ def get_file_types(uids):
                 continue
             file_types[reverse_index[d['uid']]] = d['name'].split('.')[-1]
     return file_types
-
-
-def find_html_media(uid, img):
-    img_path = os.path.join(get_dir(uid), "media", img)
-    if not os.path.exists(img_path):
-        return None
-    return img_path
