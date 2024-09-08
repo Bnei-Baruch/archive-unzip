@@ -1,6 +1,8 @@
+import html
 import os
 import subprocess
 import multiprocessing
+from html.parser import HTMLParser
 
 import pypandoc
 import tidylib
@@ -83,9 +85,10 @@ def docx_to_html(src, dest, logger):
     pypandoc.convert_file(src, to='html5', extra_args=['--standalone', '--self-contained'], outputfile=dest)
 
     with open(dest, 'r') as f:
-        html = f.read().replace('\n', '')
+        h = f.read().replace('\n', '')
+        h = html.unescape(h)
 
-    markup, err = tidylib.tidy_document(html, tidy_options)
+    markup, err = tidylib.tidy_document(h, tidy_options)
     if err:
         logger.warning("Tidy Error: %s", err)
 
