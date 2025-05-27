@@ -1,9 +1,6 @@
 name: Preview Client CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
     inputs:
       environment:
