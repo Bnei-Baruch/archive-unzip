@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.BBDEPLOYMENT_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.BBDEPLOYMENT_DOCKERHUB_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            bneibaruch/assets_api:latest
+            bneibaruch/assets_api:gh_${{github.run_number}}
+          build-args: |
+            build_number=gh_${{github.run_number}}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Set deployment variables
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+            echo "SSH_HOST=${{ secrets.ARCHIVE_HOST_STAGING }}" >> $GITHUB_ENV
+          else
+            echo "SSH_HOST=${{ secrets.ARCHIVE_HOST_PRODUCTION }}" >> $GITHUB_ENV
+          fi
+            
+      - name: Deploy to ${{ github.event.inputs.environment }} via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: root
+          key: ${{ secrets.BBDEPLOYMENT_SSH_PRIVATE_KEY }}
+          proxy_host: ${{ secrets.SSH_PROXY_HOST }}
+          proxy_username: ${{ secrets.SSH_PROXY_USERNAME }}
+          proxy_key: ${{ secrets.BBDEPLOYMENT_SSH_PRIVATE_KEY }}
+          script: |
+            cd /root/archive-docker
+            sed -i 's/ASSETS_API_VERSION.*/ASSETS_API_VERSION=gh_${{github.run_number}}/g' .env
+            docker compose pull assets_api
+            docker compose up -d --no-deps assets_api

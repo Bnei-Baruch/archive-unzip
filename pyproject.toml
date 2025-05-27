@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "archive-unzip"
+version = "0.1.0"
+description = ""
+authors = ["Edo Shor <edoshor@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pypandoc = "^1.15"
+pytidylib = "0.3.2"
+click = "6.7"
+flask = "1.1.1"
+itsdangerous = "0.24"
+jinja2 = "2.11.1"
+werkzeug = "1.0.0"
+requests = "2.27.1"
+psycopg2 = "2.9.8"
+python-docx = "0.8.10"
+uwsgi = "2.0.23"
+flask-cors = "4.0.0"
+pillow = "8.4.0"
+webvtt-py = "0.4.6"
+lxml = "5.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
