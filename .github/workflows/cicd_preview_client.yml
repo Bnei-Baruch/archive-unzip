@@ -32,8 +32,8 @@ jobs:
           context: ./preview-client
           push: true
           tags: |
-            bneibaruch/assets_api_preview:latest
-            bneibaruch/assets_api_preview:gh_${{github.run_number}}
+            bneibaruch/assets_api_preview:${{inputs.environment}}
+            bneibaruch/assets_api_preview:${{inputs.environment}}_${{github.run_number}}
           
   deploy:
     runs-on: ubuntu-latest
