@@ -1,4 +1,4 @@
-FROM    python:3.6-alpine3.8
+FROM    python:3.6-alpine3.13
 
 LABEL   maintainer="edoshor@gmail.com"
 
@@ -26,8 +26,8 @@ RUN \
     rm -f pandoc-2.1.3-linux.tar.gz && \
     apk del wget
 
-COPY --from=mwader/static-ffmpeg:4.0.3 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.0.3 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
 
 WORKDIR /app
 COPY . .
