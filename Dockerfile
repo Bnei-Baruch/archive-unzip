@@ -26,8 +26,8 @@ RUN \
     rm -f pandoc-2.1.3-linux.tar.gz && \
     apk del wget
 
-COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.1 /ffprobe /usr/local/bin/
 
 WORKDIR /app
 COPY . .
