@@ -1,6 +1,6 @@
 ARG backend_url="https://kabbalahmedia.info/assets/api/"
 
-FROM node:15 as build
+FROM node:latest AS build
 
 LABEL maintainer="edoshor@gmail.com"
 
@@ -12,7 +12,7 @@ ENV REACT_APP_BACKEND=${backend_url}
 
 COPY . .
 
-RUN yarn install --frozen-lockfile && \
+RUN yarn install --immutable && \
     yarn build && \
     rm -rf node_modules
 
