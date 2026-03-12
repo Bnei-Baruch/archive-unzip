@@ -24,6 +24,10 @@ webvtt-py = "0.4.6"
 lxml = "5.1.0"
 
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
