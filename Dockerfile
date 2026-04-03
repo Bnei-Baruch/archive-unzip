@@ -33,7 +33,13 @@ WORKDIR /app
 COPY . .
 COPY ./misc/wait-for /wait-for
 
-RUN apk add jpeg-dev zlib-dev libjpeg
+RUN apk add jpeg-dev zlib-dev libjpeg poppler-utils tesseract-ocr wget
+# Download Hebrew and Russian language data for Tesseract
+RUN mkdir -p /usr/share/tessdata && \
+    cd /usr/share/tessdata && \
+    wget -q https://github.com/tesseract-ocr/tessdata/raw/main/heb.traineddata && \
+    wget -q https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata && \
+    wget -q https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata
 RUN pip install --no-cache-dir -r requirements.txt
 
 #RUN addgroup -S deploy && adduser -H -S deploy -G deploy -u 1088 && \
